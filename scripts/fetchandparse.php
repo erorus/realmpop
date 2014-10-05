@@ -177,7 +177,7 @@ function GetNextCharacter(&$characterNames) {
     } while (!isset($realm['ownerrealms'][$sellerRealm]) && count($sellerRealms));
     if (count($sellerRealms) == 0) {
         if (count($characterNames))
-            DebugMessage('The following realms were not matched: '.implode(', ', array_keys($characterNames)), E_USER_WARNING);
+            DebugMessage('The following realms were not matched:'."\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($realm['ownerrealms'])).'"', E_USER_WARNING);
         $characterNames = [];
         return;
     }
@@ -224,7 +224,7 @@ function GetNextCharacter(&$characterNames) {
     $stmt->execute();
     $stmt->close();
 
-    if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name']) 
+    if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name'])
         GetGuild($characterNames, $dta['guild']['name'], $dta['guild']['realm']);
 
 }
