@@ -260,7 +260,7 @@ function GetGuild(&$characterNames, $guild, $realmName) {
 
     } else {
         $stmt = $db->prepare('insert into tblGuild (realm, name) values (?, ?)');
-        $stmt->bind_param('isi', $allRealms[$realmName]['id'], $guild);
+        $stmt->bind_param('is', $allRealms[$realmName]['id'], $guild);
         $stmt->execute();
         $stmt->close();
 
