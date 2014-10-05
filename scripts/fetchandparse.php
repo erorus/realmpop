@@ -16,6 +16,7 @@ CatchKill();
 if (!DBConnect())
     DebugMessage('Cannot connect to db!', E_USER_ERROR);
 
+$allRealms = [];
 if (($realm = GetNextRealm()) === false) {
     DebugMessage('No realms to fetch right now.');
     exit;
@@ -37,7 +38,7 @@ DebugMessage('Done! Started '.TimeDiff($startTime));
 
 
 function GetNextRealm() {
-    global $db;
+    global $db, $allRealms;
     $db->begin_transaction();
 
     $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -6, now()) order by lastfetch asc, id asc limit 1 for update');
@@ -67,9 +68,12 @@ function GetNextRealm() {
     $realm['ownerrealms'] = DBMapArray($result, 'ownerrealm');
     $stmt->close();
 
-    foreach ($realm['ownerrealms'] as $realmRow) {
-        $realm['realmsbyname'][$realmRow['name']] = $realmRow;
-    }
+    $stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r where r.region = ?');
+    $stmt->bind_param('s', $realm['region']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $allRealms = DBMapArray($result, 'name');
+    $stmt->close();
 
     return $realm;
 }
@@ -230,5 +234,89 @@ function GetNextCharacter(&$characterNames) {
 }
 
 function GetGuild(&$characterNames, $guild, $realmName) {
-    return;
+    global $db, $realm, $caughtKill, $allRealms;
+
+    heartbeat();
+    if ($caughtKill)
+        return;
+
+    if (!isset($allRealms[$realmName])) {
+        DebugMessage('Could not find realm '.$realmName);
+        return;
+    }
+
+    $guildId = 0;
+    $scanned = 0;
+    $stmt = $db->prepare('select id, ifnull(scanned,\'2000-01-01\') from tblGuild where realm = ? and name = ?');
+    $stmt->bind_param('is', $allRealms[$realmName]['id'], $guild);
+    $stmt->execute();
+    $stmt->bind_result($guildId, $scanned);
+    $hasRow = ($stmt->fetch() === true);
+    $stmt->close();
+
+    if ($hasRow) {
+        if (strtotime($scanned) >= time() - (14*24*60*60))
+            return;
+
+    } else {
+        $stmt = $db->prepare('insert into tblGuild (realm, name) values (?, ?)');
+        $stmt->bind_param('isi', $allRealms[$realmName]['id'], $guild);
+        $stmt->execute();
+        $stmt->close();
+
+        $guildId = $db->insert_id;
+    }
+
+    DebugMessage("Getting guild <$guild> on $realmName");
+    $url = GetBattleNetURL($allRealms[$realmName]['region'], "wow/guild/".$allRealms[$realmName]['slug']."/".rawurlencode($guild)."?fields=members");
+    $json = FetchHTTP($url);
+    if (!$json)
+        return;
+
+    heartbeat();
+    if ($caughtKill)
+        return;
+
+    $dta = json_decode($json, true);
+    if (json_last_error() != JSON_ERROR_NONE)
+        return;
+
+    if (!isset($dta['members']))
+        return;
+
+    $charCount = 0;
+    $side = $dta['side']+1;
+
+    foreach ($dta['members'] as $member) {
+        if (!isset($member['character']))
+            continue;
+
+        if (!isset($member['character']['name']))
+            continue;
+
+        if (!isset($allRealms[$member['character']['realm']]))
+            continue;
+
+        $charCount++;
+        $member['character']['gender']++; // line up with db enum
+
+        $stmt = $db->prepare('replace into tblCharacter (name, realm, guild, scanned, race, class, gender, level) values (?, ?, ?, NOW(), ?, ?, ?, ?)');
+        $stmt->bind_param('siiiiii',
+            $member['character']['name'],
+            $allRealms[$member['character']['realm']]['id'],
+            $guildId,
+            $member['character']['race'],
+            $member['character']['class'],
+            $member['character']['gender'],
+            $member['character']['level']);
+        $stmt->execute();
+        $stmt->close();
+
+        unset($characterNames[$allRealms[$member['character']['realm']]['ownerrealm']][$member['character']['name']]);
+    }
+
+    $stmt = $db->prepare('update tblGuild set scanned=now(), side=?, members=? where id = ?');
+    $stmt->bind_param('iii', $side, $charCount, $guildId);
+    $stmt->execute();
+    $stmt->close();
 }
