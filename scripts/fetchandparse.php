@@ -214,14 +214,19 @@ function GetNextCharacter(&$characterNames) {
     if (json_last_error() != JSON_ERROR_NONE)
         return;
 
+    if (!isset($dta['name']))
+        return;
+
+    $dta['gender']++; // line up with db enum
+
     $stmt = $db->prepare('replace into tblCharacter (name, realm, guild, scanned, race, class, gender, level) values (?, ?, null, NOW(), ?, ?, ?, ?)');
     $stmt->bind_param('siiiii', $dta['name'], $realmRow['id'], $dta['race'], $dta['class'], $dta['gender'], $dta['level']);
     $stmt->execute();
     $stmt->close();
 
-    if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name']) {
+    if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name']) 
         GetGuild($characterNames, $dta['guild']['name'], $dta['guild']['realm']);
-    }
+
 }
 
 function GetGuild(&$characterNames, $guild, $realmName) {
