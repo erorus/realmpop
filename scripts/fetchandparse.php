@@ -204,7 +204,11 @@ function GetNextCharacter(&$characterNames) {
     if ($c > 0)
         return;
 
-    DebugMessage("Getting character $character on {$realmRow['name']}");
+    $totalChars = 0;
+    foreach (array_keys($characterNames) as $k)
+        $totalChars += count($characterNames[$k]);
+
+    DebugMessage("Getting character $character on {$realmRow['name']} ($totalChars remaining)");
     $url = GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild");
     $json = FetchHTTP($url);
     if (!$json)
