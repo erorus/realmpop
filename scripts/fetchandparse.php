@@ -175,7 +175,7 @@ function GetNextCharacter(&$characterNames) {
             $sellerRealm = '~';
         }
     } while (!isset($realm['ownerrealms'][$sellerRealm]) && count($sellerRealms));
-    if (count($sellerRealms) == 0) {
+    if (!isset($realm['ownerrealms'][$sellerRealm]) && count($sellerRealms) == 0) {
         if (count($characterNames))
             DebugMessage('The following realms were not matched:'."\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($realm['ownerrealms'])).'"', E_USER_WARNING);
         $characterNames = [];
