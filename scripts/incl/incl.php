@@ -35,7 +35,7 @@ function DBConnect($alternate = false)
     if ($connected && !$alternate)
         return $db;
 
-    $host = 'localhost';
+    $host = DATABASE_HOST;
     $user = DATABASE_USERNAME;
     $pass = DATABASE_PASSWORD;
     $database = DATABASE_SCHEMA;

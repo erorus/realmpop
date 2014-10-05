@@ -1,2 +1,3 @@
 .idea
-scripts/*.credentials.php
+scripts/incl/*.credentials.php
+scripts/realms2houses_cache/*
