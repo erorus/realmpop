@@ -294,6 +294,9 @@ function GetGuild(&$characterNames, $guild, $realmName) {
         if (!isset($member['character']['name']))
             continue;
 
+        if (!isset($member['character']['realm']))
+            continue;
+
         if (!isset($allRealms[$member['character']['realm']]))
             continue;
 
