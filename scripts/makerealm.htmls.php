@@ -185,8 +185,7 @@ google_ad_height = 90;
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/jquery-ui.min.js"></script>
 <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
-<script type="text/javascript" src="cloud.min.js"></script>
-<script type="text/javascript" src="realmcharts.min.js"></script>
+<script type="text/javascript" src="realmcharts.js"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];

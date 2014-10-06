@@ -1,3 +1,9 @@
 .idea
 scripts/incl/*.credentials.php
 scripts/realms2houses_cache/*
+public/us.html
+public/us-*.html
+public/eu.html
+public/eu-*.html
+public/connected-realms.json
+

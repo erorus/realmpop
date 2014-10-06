@@ -34,19 +34,12 @@ a {color: #000099}
 	<li><b>What</b> - We currently record character names, races, classes, genders, levels, and guild memberships for all characters on every realm in the US and EU regions.</li>
 	<li><b>How</b> - To get the list of characters for a realm, first we record all the characters who posted to the auction house. Then we fetch and record their guild rosters. This should cover the majority of characters on a realm. To avoid getting listed, a character must never post to the auction house, and never belong to a guild where a guild member posts to the auction house.</li>
 	<li><b>Who</b> - It's important to remember that we're simply counting the <i>number of characters seen</i> for each category. This does <b>not</b> mean the number of players, nor the number of actively played characters. We can't efficiently get activity data yet, so some characters may not have been played for a long time.</li>
-	<li><b>When</b> - We re-fetch guild rosters about once every 10-12 days, and then fetch characters we haven't seen after about 20 days. The goal is to find all characters, not necessarily to have up-to-date guild rosters. The reports that come from this data get updated about once a week.</li>
-	<li><b>Where</b> - We use the Battle.net API to get character and guild information. Every visitor to this site fetches some data that we need and sends it to our servers. In compliance with Blizzard's Third-Party API Usage Policy, you can view the code that accesses the API by loading <a href="cloud.min.js">this JavaScript file</a> and running it through <a href="http://jsbeautifier.org/">a beautifier</a>.</li>
+	<li><b>When</b> - We constantly update players and guilds as they appear on the auction house. The goal is to find all characters, not necessarily to have up-to-date guild rosters. The reports that come from this data get updated about once a week.</li>
+	<li><b>Where</b> - We use the Battle.net API to get character and guild information.</li>
 </ul>
 
 <h3>Other Sites</h3>
 To get informed and amazed about your auction house, pick up <a href="http://theunderminejournal.com/">The Undermine Journal</a>.<p/>
-To see a variety of characters and what's in style, browse <a href="http://transmogfashion.tumblr.com/">Transmog Fashion</a> or follow on Twitter <a href="http://twitter.com/TransmogFashion">@TransmogFashion</a>.<!-- p/>
-To view and share your bag, bank, guild bank, and void storage items, employ <a href="http://goblinventory.com/">Goblinventory</a>.<p/>
-To browse your character's achievements, mounts, pets, and more, stop by <a href="http://phenixarmory.com/">Phenix Armory</a>.
--->
-
-<!-- <h3>Contact</h3>
-You can find those responsible for this via email: <i>erorus at realmpop dot com</i> -->
 
 <div align="center" style="font-size: 9px; margin-top: 20px; font-family: sans-serif">Realm Pop uses names and images from World of Warcraft, and data proprietary to Blizzard Entertainment, Inc.<br>World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries.</div>
 
@@ -54,7 +47,6 @@ You can find those responsible for this via email: <i>erorus at realmpop dot com
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/jquery-ui.min.js"></script>
 <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
-<script type="text/javascript" src="cloud.min.js"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -67,9 +59,6 @@ You can find those responsible for this via email: <i>erorus at realmpop dot com
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
-
-	var stickevent = function(o,ev,ptr){if(o.addEventListener)o.addEventListener(ev,ptr,false);else if(o.attachEvent)o.attachEvent('on'+ev,ptr);};
-	if (cloudfetch && (!cloudfetch.ismobile)) stickevent(window,'load',function(){cloudfetch.fetchurl('')});
 
 </script>
 </body></html>
