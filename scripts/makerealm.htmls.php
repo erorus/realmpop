@@ -226,7 +226,7 @@ foreach($regions as $region) {
 	file_put_contents($publicDir.'/'.strtolower($region).'.html', cookhtml($region));
 
     $stmt = $db->prepare('select distinct slug from tblRealm where region = ?');
-    $stmt->bind_params('s',$region);
+    $stmt->bind_param('s',$region);
     $stmt->execute();
     $result = $stmt->get_result();
     $slugs = DBMapArray($result, null);
@@ -259,7 +259,7 @@ function cookhtml($realmset, $slug='') {
 		$realmslug = substr($slug, 0, 45);
 
         $stmt = $db->prepare('select * from tblRealm where region = ? and slug = ?');
-        $stmt->bind_params('ss',$realmset,$slug);
+        $stmt->bind_param('ss',$realmset,$slug);
         $stmt->execute();
         $result = $stmt->get_result();
         $rows = DBMapArray($result, null);
@@ -292,7 +292,7 @@ where house = ? and id != ?
 EOF;
 
         $stmt = $db->prepare($sql);
-        $stmt->bind_params('ii',$row['house'],$row['id']);
+        $stmt->bind_param('ii',$row['house'],$row['id']);
         $stmt->execute();
         $result = $stmt->get_result();
         $connectedRows = DBMapArray($result, null);
