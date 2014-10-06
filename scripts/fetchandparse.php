@@ -194,7 +194,7 @@ function GetNextCharacter(&$characterNames) {
     unset($characterNames[$sellerRealm][$character]);
 
     $c = 0;
-    $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, -4, now())');
+    $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, if(level is null, -1, -4), now())');
     $stmt->bind_param('si', $character, $realmRow['id']);
     $stmt->execute();
     $stmt->bind_result($c);
@@ -211,8 +211,14 @@ function GetNextCharacter(&$characterNames) {
     DebugMessage("Getting character $character on {$realmRow['name']} ($totalChars remaining)");
     $url = GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild");
     $json = FetchHTTP($url);
-    if (!$json)
+    if (!$json) {
+        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned) values (?, ?, NOW()) on duplicate key update scanned=values(scanned)');
+        $stmt->bind_param('si', $character, $realmRow['id']);
+        $stmt->execute();
+        $stmt->close();
+
         return;
+    }
 
     heartbeat();
     if ($caughtKill)

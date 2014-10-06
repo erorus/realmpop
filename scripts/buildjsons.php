@@ -101,14 +101,15 @@ EOF;
         $sql = <<<EOF
 select c.name, 
 ifnull(c.race,'Unknown') race, 
-ifnull(class,'Unknown') class, 
-ifnull(gender,'Unknown') gender, 
-ifnull(level,0) level, 
+ifnull(c.class,'Unknown') class,
+ifnull(c.gender,'Unknown') gender,
+ifnull(c.level,0) level,
 ifnull(s.side,'Unknown') side 
 from tblCharacter c
 left join tblSide s on c.race=s.race
 where c.realm = ?
-order by cast(gender as char) desc, cast(class as char), s.side, cast(c.race as char), level
+and c.level is not null
+order by cast(c.gender as char) desc, cast(c.class as char), s.side, cast(c.race as char), level
 EOF;
         $stmt = $db->prepare($sql);
         $stmt->bind_param('i', $realmId);
