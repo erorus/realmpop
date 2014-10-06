@@ -10,7 +10,7 @@ require_once('incl/battlenet.incl.php');
 
 //ini_set('memory_limit','512M');
 
-RunMeNTimes(2);
+RunMeNTimes(3);
 CatchKill();
 
 if (!DBConnect())
@@ -84,14 +84,14 @@ function GetCharacterNames($realm) {
     $result = [];
 
     heartbeat();
-    DebugMessage("Fetching {$realm['region']} {$realm['slug']}");
-    $url = GetBattleNetURL($realm['region'], "wow/auction/data/{$realm['slug']}");
+    DebugMessage("Fetching {$realm['region']} {$realm['canonical']}");
+    $url = GetBattleNetURL($realm['region'], "wow/auction/data/{$realm['canonical']}");
 
     $json = FetchHTTP($url);
     $dta = json_decode($json, true);
     if (!isset($dta['files']))
     {
-        DebugMessage("{$realm['region']} {$realm['slug']} returned no files.", E_USER_WARNING);
+        DebugMessage("{$realm['region']} {$realm['canonical']} returned no files.", E_USER_WARNING);
         return $result;
     }
 
@@ -147,7 +147,7 @@ function GetCharacterNames($realm) {
 
 
     $xferBytes = isset($outHeaders['X-Original-Content-Length']) ? $outHeaders['X-Original-Content-Length'] : strlen($json);
-    DebugMessage("{$realm['region']} {$realm['slug']} data file ".strlen($json)." bytes".($xferBytes != strlen($json) ? (' (transfer length '.$xferBytes.', '.round($xferBytes/strlen($json)*100,1).'%)') : ''));
+    DebugMessage("{$realm['region']} {$realm['canonical']} data file ".strlen($json)." bytes".($xferBytes != strlen($json) ? (' (transfer length '.$xferBytes.', '.round($xferBytes/strlen($json)*100,1).'%)') : ''));
 
     heartbeat();
     if ($caughtKill)
