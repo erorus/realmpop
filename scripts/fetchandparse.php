@@ -8,7 +8,7 @@ require_once('incl/incl.php');
 require_once('incl/heartbeat.incl.php');
 require_once('incl/battlenet.incl.php');
 
-ini_set('memory_limit','512M');
+//ini_set('memory_limit','512M');
 
 RunMeNTimes(2);
 CatchKill();

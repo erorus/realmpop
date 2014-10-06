@@ -5,5 +5,9 @@ public/us.html
 public/us-*.html
 public/eu.html
 public/eu-*.html
+public/us.json
+public/us-*.json
+public/eu.json
+public/eu-*.json
 public/connected-realms.json
 

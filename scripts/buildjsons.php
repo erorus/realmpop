@@ -1,51 +1,121 @@
 <?php
 
-require_once('incl.php');
+$startTime = time();
 
+require_once('incl/incl.php');
+require_once('incl/heartbeat.incl.php');
 
-/*
-2 pvp
-2 rp
-4 region
-5 timezone
-2 gender
-10 class
-12 race
-85 level
-*/
+$publicDir = realpath(__DIR__.'/../public');
 
-do_connect();
-$rst = get_rst('select concat_ws(\'-\',lower(r1.realmset), r1.slug) as lookup, concat_ws(\'-\',lower(r2.realmset), r2.slug) as connto from tblConnectedRealm c join tblRealm r1 on c.lookup = r1.id join tblRealm r2 on c.connto = r2.id');
+RunMeNTimes(1);
+CatchKill();
+
+if (!DBConnect())
+    DebugMessage('Cannot connect to db!', E_USER_ERROR);
+
+heartbeat();
+if ($caughtKill)
+    exit;
+
+$sql = <<<EOF
+select
+concat_ws('-',lower(r1.region), r1.slug) as lookup,
+concat_ws('-',lower(r2.region), r2.slug) as connto
+from tblRealm r1
+join tblRealm r2 on r1.house = r2.house and r1.id != r2.id
+EOF;
+
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$result = $stmt->get_result();
+$rows = DBMapArray($result, null);
+$stmt->close();
+
 $cr = array();
-while ($row = next_row($rst)) 
+foreach ($rows as $row) 
 	$cr[$row['lookup']][] = $row['connto'];
-file_put_contents('public/connected-realms.json',json_encode($cr));
+file_put_contents($publicDir.'/connected-realms.json',json_encode($cr));
 
-$realmsetrst = get_rst('select distinct realmset from tblRealm '.(isset($argv[1])?('where realmset=\''.sql_esc($argv[1]).'\''):''));
-while ($realmsetrow = next_row($realmsetrst)) {
-	$realmsetstats = array('realms' => array(), 'demographics' => array());
+heartbeat();
+if ($caughtKill)
+    exit;
+
+if (isset($argv[1])) {
+    $stmt = $db->prepare('select distinct region from tblRealm where region = ?');
+    $stmt->bind_param('s',$argv[1]);
+} else {
+    $stmt = $db->prepare('select distinct region from tblRealm');
+}
+$stmt->execute();
+$result = $stmt->get_result();
+$regions = DBMapArray($result, null);
+$stmt->close();
+
+heartbeat();
+if ($caughtKill)
+    exit;
+
+foreach ($regions as $region) {
+    heartbeat();
+    if ($caughtKill)
+        break;
+
+	$regionStats = array('realms' => array(), 'demographics' => array());
 		
-	$sql = 'select r.*, ';
-	$sql .= ' case r.pvp when 0 then \'PvE\' when 1 then \'PvP\' else \'Unknown\' end pvpname, ';
-	$sql .= ' case r.rp when 0 then \'Normal\' when 1 then \'RP\' else \'Unknown\' end rpname, ';
-	$sql .= ' ifnull(region, \'Unknown\') regionname, ';
-	$sql .= ' ifnull(timezone, \'Unknown\') timezonename ';
-	$sql .= ' from tblRealm r, (SELECT distinct realmid FROM tblGuild) g where r.id=g.realmid and r.realmset=\''.sql_esc($realmsetrow['realmset']).'\' order by 1';
-	$realmrst = get_rst($sql);
-	while ($realmrow = next_row($realmrst)) { 
-		$fn = strtolower($realmrow['realmset']).'-'.$realmrow['slug'];
-		echo Date('Y-m-d H:i:s')." Making $fn\n";
+	$sql = <<<EOF
+    select r.*,
+    case r.pvp when 0 then 'PvE' when 1 then 'PvP' else 'Unknown' end pvpname,
+    case r.rp when 0 then 'Normal' when 1 then 'RP' else 'Unknown' end rpname,
+	ifnull(region, 'Unknown') regionname,
+	ifnull(timezone, 'Unknown') timezonename
+	from tblRealm r
+	where r.region = ? 
+	and r.lastfetch is not null
+	order by 1
+EOF;
 
-		$realmsetstats['realms'][$realmrow['slug']] = array('name'=>$realmrow['name'],'counts'=>array('Alliance'=>0,'Horde'=>0,'Unknown'=>0,'Neutral'=>0),'stats'=>array('pvp'=>$realmrow['pvpname'],'rp'=>$realmrow['rpname'],'region'=>$realmrow['region'],'timezone'=>$realmrow['timezonename']));
+    $stmt = $db->prepare($sql);
+    $stmt->bind_param('s', $region);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $realms = DBMapArray($result);
+    $stmt->close();
 
-		if (!isset($realmsetstats['demographics'][$realmrow['pvpname']])) $realmsetstats['demographics'][$realmrow['pvpname']] = array();
-		if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']] = array();
-		if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']] = array();
-		if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']] = array();
+    foreach ($realms as $realmId => $realmRow) {
+        heartbeat();
+        if ($caughtKill)
+            break;
 
-		$rst = get_rst('select c.name, ifnull(c.race,\'Unknown\') race, ifnull(class,\'Unknown\') class, ifnull(gender,\'Unknown\') gender, ifnull(level,0) level, ifnull(s.side,\'Unknown\') side from (tblCharacter c left join tblSide s on c.race=s.race) where c.realmid=\''.sql_esc($realmrow['id']).'\' order by cast(gender as char) desc, cast(class as char), s.side, cast(c.race as char), level');
-		$result = array('characters'=>array(),'guilds'=>array(),'meta'=>array());
-		while ($row = next_row($rst)) {
+		$fn = strtolower($region).'-'.$realmRow['slug'];
+        DebugMessage("Making $fn");
+
+		$regionStats['realms'][$realmRow['slug']] = array('name'=>$realmRow['name'],'counts'=>array('Alliance'=>0,'Horde'=>0,'Unknown'=>0,'Neutral'=>0),'stats'=>array('pvp'=>$realmRow['pvpname'],'rp'=>$realmRow['rpname'],'region'=>$realmRow['region'],'timezone'=>$realmRow['timezonename']));
+
+		if (!isset($regionStats['demographics'][$realmRow['pvpname']])) $regionStats['demographics'][$realmRow['pvpname']] = array();
+		if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']] = array();
+		if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']] = array();
+		if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']] = array();
+
+        $result = array('characters'=>array(),'guilds'=>array(),'meta'=>array());
+
+        $sql = <<<EOF
+select c.name, 
+ifnull(c.race,'Unknown') race, 
+ifnull(class,'Unknown') class, 
+ifnull(gender,'Unknown') gender, 
+ifnull(level,0) level, 
+ifnull(s.side,'Unknown') side 
+from tblCharacter c
+left join tblSide s on c.race=s.race
+where c.realm = ?
+order by cast(gender as char) desc, cast(class as char), s.side, cast(c.race as char), level
+EOF;
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param('i', $realmId);
+        $stmt->execute();
+        $rst = $stmt->get_result();
+		while ($row = $rst->fetch_assoc()) {
+            heartbeat();
 			//if (substr($row['race'],0,8) == 'Pandaren') $row['race'] = 'Pandaren';
 			if (!isset($result['characters'][$row['gender']])) $result['characters'][$row['gender']] = array();
 			if (!isset($result['characters'][$row['gender']][$row['class']])) $result['characters'][$row['gender']][$row['class']] = array();
@@ -53,30 +123,41 @@ while ($realmsetrow = next_row($realmsetrst)) {
 			if (!isset($result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']])) $result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']] = array();
 			$result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']][] = $row['name']; //array('character' => $row['name'], 'guild' => $row['guildname']);
 
-			if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']] = array();
-			if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']] = array();
-			if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']][$row['race']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']][$row['race']] = array();
-			if (!isset($realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']])) $realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']] = 0;
-			$realmsetstats['demographics'][$realmrow['pvpname']][$realmrow['rpname']][$realmrow['regionname']][$realmrow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']]++;
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']] = 0;
+			$regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']]++;
 			
-			$realmsetstats['realms'][$realmrow['slug']]['counts'][$row['side']]++;
+			$regionStats['realms'][$realmRow['slug']]['counts'][$row['side']]++;
 		}
-		$rst = get_rst('select name, side, members from tblGuild where realmid=\''.sql_esc($realmrow['id']).'\' order by members desc, name asc');
-		while ($row = next_row($rst)) {
+        $rst->close();
+        $stmt->close();
+
+        heartbeat();
+        if ($caughtKill)
+            break;
+
+        $stmt = $db->prepare('select name, side, members from tblGuild where realm=? order by members desc, name asc');
+        $stmt->bind_param('i', $realmId);
+        $stmt->execute();
+        $rst = $stmt->get_result();
+		while ($row = $rst->fetch_assoc()) {
+            heartbeat();
 			if (!isset($result['guilds'][$row['side']])) $result['guilds'][$row['side']] = array();
 			$result['guilds'][$row['side']][] = array('guild'=>$row['name'],'membercount'=>intval($row['members']));
 		}
-		$result['meta']['slug']=$realmrow['slug'];
-		$result['meta']['realmset']=$realmrow['realmset'];
-		file_put_contents('public/'.$fn.'.json',json_encode($result));
+        $rst->close();
+        $stmt->close();
+
+		$result['meta']['slug']=$realmRow['slug'];
+		$result['meta']['realmset']=$region;
+		file_put_contents($publicDir.'/'.$fn.'.json',json_encode($result));
 		unset($result);
 	}
-	file_put_contents('public/'.strtolower($realmsetrow['realmset']).'.json',json_encode($realmsetstats));
+
+    if (!$caughtKill)
+	    file_put_contents($publicDir.'/'.strtolower($region).'.json',json_encode($regionStats));
 }
 
-
-echo Date('Y-m-d H:i:s')." Done!\n";
-
-
-cleanup();
-?>
+DebugMessage('Done! Started '.TimeDiff($startTime));
