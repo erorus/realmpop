@@ -3,6 +3,7 @@
 	function stickevent(o,ev,ptr){if(o.addEventListener)o.addEventListener(ev,ptr,false);else if(o.attachEvent)o.attachEvent('on'+ev,ptr);}
 
 	var __connectedRealms = {};
+    var __maxLevel = 100;
 
 	//google.load('jquery','1');
 	//google.load('jqueryui','1');
@@ -23,8 +24,8 @@
 			$( "#divLvlSlider" ).slider({
 				range: true,
 				min: 0,
-				max: 90,
-				values: [ 0, 90 ],
+				max: __maxLevel,
+				values: [ 0, __maxLevel ],
 				slide: function(event,ui) {
 					getele('divTtlLevel').innerHTML = "Level Range: "+ui.values[0]+' - '+ui.values[1];
 					},
@@ -165,7 +166,7 @@
 		}
 	}
 
-	var myChartData = {drawing: false, drawagain: false, masks: {'pvp':'','rp':'','region':'','timezone':'','gender':'','classs':'','race':'','level':[0,90],'faction':''}, jsondata: undefined};
+	var myChartData = {drawing: false, drawagain: false, masks: {'pvp':'','rp':'','region':'','timezone':'','gender':'','classs':'','race':'','level':[0,__maxLevel],'faction':''}, jsondata: undefined};
 	function drawCharts(p_jsondata) {
 		var starttime = (new Date()).getTime();
 		if (typeof p_jsondata != 'undefined') myChartData.jsondata = p_jsondata; else if (typeof myChartData.jsondata == 'undefined') return;
@@ -225,7 +226,7 @@
 		}	
 
 		if (myChartData.masks.level[0] < 0) myChartData.masks.level[0] = 0;
-		if (myChartData.masks.level[1] > 90) myChartData.masks.level[1] = 90;
+		if (myChartData.masks.level[1] > __maxLevel) myChartData.masks.level[1] = __maxLevel;
 		if (myChartData.masks.level[0] > myChartData.masks.level[1]) myChartData.masks.level[0] = myChartData.masks.level[1];
 
 		if (!isRealmset) {
