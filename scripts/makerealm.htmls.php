@@ -306,7 +306,7 @@ EOF;
 		if ($connnames != '')
 			$realmbio .= ' These statistics include its <a href="http://wowpedia.org/Connected_Realm">Connected Realm' . ((strpos($connnames, ',') !== false) ? 's' : '') . '</a>: ' . $connnames . '.';
 		
-		$html = str_replace('JSONSIZE',$jsonsize,str_replace('REALMSET', strtolower($row['realmset']), str_replace('REALMBIO', $realmbio, str_replace('PRETTYREALM', $row['realmset']." ".$row['name'], str_replace('SLUG', $row['slug'], $html)))));
+		$html = str_replace('JSONSIZE',$jsonsize,str_replace('REALMSET', strtolower($realmset), str_replace('REALMBIO', $realmbio, str_replace('PRETTYREALM', $realmset." ".$row['name'], str_replace('SLUG', $row['slug'], $html)))));
 
 		return $html;
 	} else {
