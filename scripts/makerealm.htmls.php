@@ -1,6 +1,8 @@
 <?php
 
-require_once('incl.php');
+$startTime = time();
+
+require_once('incl/incl.php');
 
 $htmlheader = <<<PHPEOF
 <!DOCTYPE html>
@@ -203,41 +205,77 @@ google_ad_height = 90;
 </body></html>
 PHPEOF;
 
-// <script type="text/javascript" src="realmpop.min.js"></script>
+$publicDir = realpath(__DIR__.'/../public');
 
-do_connect();
-$realmsetrst = get_rst('select distinct realmset from tblRealm');
-while ($realmsetrow = next_row($realmsetrst)) {
-	file_put_contents('public/'.strtolower($realmsetrow['realmset']).'.html', cookhtml($realmsetrow['realmset']));
-	$realmrst = get_rst('select distinct slug from tblRealm where realmset=\''.sql_esc($realmsetrow['realmset']).'\'');
-	while ($realmrow = next_row($realmrst)) file_put_contents('public/'.strtolower($realmsetrow['realmset']).'-'.$realmrow['slug'].'.html', cookhtml($realmsetrow['realmset'],$realmrow['slug']));
+RunMeNTimes(1);
+CatchKill();
+
+if (!DBConnect())
+    DebugMessage('Cannot connect to db!', E_USER_ERROR);
+
+$stmt = $db->prepare('select distinct region from tblRealm');
+$stmt->execute();
+$result = $stmt->get_result();
+$regions = DBMapArray($result, null);
+$stmt->close();
+
+foreach($regions as $region) {
+    if ($caughtKill)
+        break;
+
+	file_put_contents($publicDir.'/'.strtolower($region).'.html', cookhtml($region));
+
+    $stmt = $db->prepare('select distinct slug from tblRealm where region = ?');
+    $stmt->bind_params('s',$region);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $slugs = DBMapArray($result, null);
+    $stmt->close();
+
+	foreach($slugs as $slug) {
+        if ($caughtKill)
+            break;
+
+        file_put_contents($publicDir.'/'.strtolower($region).'-'.$slug.'.html', cookhtml($region,$slug));
+    }
 }
-cleanup();
+
+DebugMessage('Done! Started '.TimeDiff($startTime));
+
 
 // PRETTYREALM SLUG REALMBIO REALMSET JSONSIZE
 
 function cookhtml($realmset, $slug='') {
-	global $htmlheader,$htmlrealm,$htmlend,$htmlrealmset;
+	global $publicDir,$db;
+    global $htmlheader,$htmlrealm,$htmlend,$htmlrealmset;
 
-	$jsonfn = 'public/'.strtolower($realmset).(($slug != '')?'-':'').$slug.'.json';
+	$jsonfn = $publicDir.'/'.strtolower($realmset).(($slug != '')?'-':'').$slug.'.json';
 	$jsonsize = file_exists($jsonfn)?filesize($jsonfn):0;
 
 	if ($slug != '') {
 		$html = $htmlheader.$htmlrealm.$htmlend;
 
-		do_connect();
-
 		$realmset = substr(strtoupper($realmset),0,2);
 		$realmslug = substr($slug, 0, 45);
 
-		$row = get_single_row('select * from tblRealm where realmset=\''.sql_esc($realmset).'\' and slug=\''.sql_esc($realmslug).'\'');
-		if (!isset($row['id'])) return '';
+        $stmt = $db->prepare('select * from tblRealm where region = ? and slug = ?');
+        $stmt->bind_params('ss',$realmset,$slug);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = DBMapArray($result, null);
+        $stmt->close();
+
+        if (count($rows) == 0) {
+            return '';
+        }
+
+        $row = array_pop($rows);
 
 		if ($realmslug != $row['slug']) 
 			$realmslug = $row['slug'];
 		
-		$realmbio = $row['realmset'].' '.$row['name'].' is a '.(($row['rp']=='1')?'RP ':'Normal ').(($row['pvp']=='1')?'PvP':'PvE').' realm';
-		if (nvl($row['region'],'') != '') $realmbio .= ' in the '.$row['region'].' region';
+		$realmbio = $row['region'].' '.$row['name'].' is a '.(($row['rp']=='1')?'RP ':'Normal ').(($row['pvp']=='1')?'PvP':'PvE').' realm';
+		//if (nvl($row['region'],'') != '') $realmbio .= ' in the '.$row['region'].' region';
 		if (nvl($row['timezone'],'') != '') $realmbio .= ' in the '.$row['timezone'].' time zone';
 		$realmbio .= '.';
 		//if (nvl($row['forumid'],'') != '') $realmbio .= ' <a href="http://'.strtolower($row['realmset']).'.battle.net/wow/
@@ -245,10 +283,24 @@ function cookhtml($realmset, $slug='') {
 	
 		//header('Content-type: text/html; charset=utf8');
 
+        $sql = <<<EOF
+select
+concat_ws('-', lower(region), slug) as connslug,
+concat_ws(' ', region, name) as connname
+from tblRealm
+where house = ? and id != ?
+EOF;
+
+        $stmt = $db->prepare($sql);
+        $stmt->bind_params('ii',$row['house'],$row['id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $connectedRows = DBMapArray($result, null);
+        $stmt->close();
+
 		$connnames = '';
-		$rst = get_rst('select concat_ws(\'-\',lower(r2.realmset), r2.slug) as connslug, concat_ws(\' \', r2.realmset, r2.name) as connname from tblConnectedRealm c join tblRealm r2 on c.connto = r2.id where c.lookup=' . $row['id']);
-		while ($connrow = next_row($rst)) {
-			$jsonsize += file_exists('public/' . $connrow['connslug'] . '.json') ? filesize('public/' . $connrow['connslug'] . '.json') : 0;
+		foreach ($connectedRows as $connrow) {
+			$jsonsize += file_exists($publicDir.'/' . $connrow['connslug'] . '.json') ? filesize($publicDir.'/' . $connrow['connslug'] . '.json') : 0;
 			$connnames .= (($connnames == '') ? '' : ', ') . $connrow['connname'];
 		}
 		if ($connnames != '')
@@ -277,4 +329,3 @@ function cookhtml($realmset, $slug='') {
 	}
 }
 
-?>
