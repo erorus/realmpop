@@ -37,6 +37,7 @@ a {color: #000099}
 <script>
 (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
+<br>
 Click a pie wedge to narrow down, click again to branch out. Find lists and navigation at the bottom of the page.
 PHPEOF;
 
@@ -155,11 +156,13 @@ $htmlrealmset = <<<PHPEOF
 <div id="chtList" style="width: 900px; height: 450px; overflow-y: auto"></div>
 </div>
 </div>
+<br>
 <a href="./" class="ttl">Back to Front Page</a>
 PHPEOF;
 
 $htmlend = <<<PHPEOF
 </div>
+<br>
 <div align="center">
 <ins class="adsbygoogle"
      style="display:inline-block;width:728px;height:90px"
