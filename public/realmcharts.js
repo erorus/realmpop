@@ -137,8 +137,7 @@
 							dataUnion(json.characters, requests[rss].json.characters, rss);
 					getele('divLoadingText').innerHTML='Drawing charts..';
 					if (json) drawCharts(json); else getele('divLoadingText').innerHTML='Error retrieving data. <a href="javascript:void(0);" onclick="getChartData();">Try again?</a>';
-					if (cloudfetch && (!cloudfetch.ismobile)) cloudfetch.fetchurl('');
-				} else 	getele('divLoadingText').innerHTML='Error retrieving data. <a href="javascript:void(0);" onclick="getChartData();">Try again?</a>';	
+				} else 	getele('divLoadingText').innerHTML='Error retrieving data. <a href="javascript:void(0);" onclick="getChartData();">Try again?</a>';
 				delete requests;		
 			}
 		}

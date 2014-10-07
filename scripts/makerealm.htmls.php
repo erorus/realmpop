@@ -10,8 +10,8 @@ $htmlheader = <<<PHPEOF
 <head>
 <title>PRETTYREALM Realm Pop</title>
 <link rel="shortcut icon" href="/favicon.ico"></link>
-<link href='http://fonts.googleapis.com/css?family=Abel' rel='stylesheet' type='text/css'></link>
-<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css" type="text/css"></link>
+<link href='//fonts.googleapis.com/css?family=Abel' rel='stylesheet' type='text/css'></link>
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css" type="text/css"></link>
 <style type="text/css">
 .nobr {white-space: nowrap}
 #tblCharts td {padding-bottom: 25px}
@@ -23,24 +23,20 @@ $htmlheader = <<<PHPEOF
 .tablesorter td {border: 1px solid #EEE; padding: 2px}
 a {color: #000099}
 </style>
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body style="margin: 0; font-family: 'Abel', sans-serif">
 <div style="margin: 0 auto; width: 900px; vertical-align: bottom; padding-top: 10px; padding-bottom: 10px; position: relative">
 <h1>PRETTYREALM <span class="nobr">Realm Pop</span></h1>
 <div id="divRealmBio" style="margin-bottom: 1.5em">REALMBIO</div>
 <div align="center">
-<script type="text/javascript"><!--
-google_ad_client = "ca-pub-1018837251546750";
-/* RealmPopTop */
-google_ad_slot = "6730965026";
-google_ad_width = 728;
-google_ad_height = 90;
-//-->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-1018837251546750"
+     data-ad-slot="6730965026"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
 </script>
-<script type="text/javascript"
-src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-</script>
-</div>
 Click a pie wedge to narrow down, click again to branch out. Find lists and navigation at the bottom of the page.
 PHPEOF;
 
@@ -165,15 +161,13 @@ PHPEOF;
 $htmlend = <<<PHPEOF
 </div>
 <div align="center">
-<script type="text/javascript"><!--
-google_ad_client = "ca-pub-1018837251546750";
-/* RealmpopBottomCenter */
-google_ad_slot = "6591093962";
-google_ad_width = 728;
-google_ad_height = 90;
-//-->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-1018837251546750"
+     data-ad-slot="6591093962"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
 </script>
-<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
 </div>
 
 <div align="center" style="font-size: 9px; margin-top: 20px; font-family: sans-serif">Realm Pop uses names and images from World of Warcraft, and data proprietary to Blizzard Entertainment, Inc.<br>World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries.</div>
