@@ -72,7 +72,6 @@ foreach ($regions as $region) {
 	ifnull(timezone, 'Unknown') timezonename
 	from tblRealm r
 	where r.region = ? 
-	and r.lastfetch is not null
 	order by 1
 EOF;
 
