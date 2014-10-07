@@ -258,7 +258,20 @@ function cookhtml($realmset, $slug='') {
 		$realmset = substr(strtoupper($realmset),0,2);
 		$realmslug = substr($slug, 0, 45);
 
-        $stmt = $db->prepare('select * from tblRealm where region = ? and slug = ?');
+        $sql = <<<EOF
+select r.*, if(r.region='US',if(locale='pt_BR', 'Brazil', if(locale='es_MX', 'Latin America', if(timezone like 'Australia/%', 'Oceanic', 'United States'))),
+case locale
+when 'de_DE' then 'German'
+when 'en_GB' then 'English'
+when 'es_ES' then 'Spanish'
+when 'fr_FR' then 'French'
+when 'pt_BR' then 'Portuguese'
+when 'it_IT' then 'Italian'
+when 'ru_RU' then 'Russian'
+else 'Unknown' end) regionname from tblRealm r, where region = ? and slug = ?
+EOF;
+
+        $stmt = $db->prepare($sql);
         $stmt->bind_param('ss',$realmset,$slug);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -275,7 +288,7 @@ function cookhtml($realmset, $slug='') {
 			$realmslug = $row['slug'];
 		
 		$realmbio = $row['region'].' '.$row['name'].' is a '.(($row['rp']=='1')?'RP ':'Normal ').(($row['pvp']=='1')?'PvP':'PvE').' realm';
-		//if (nvl($row['region'],'') != '') $realmbio .= ' in the '.$row['region'].' region';
+		if (nvl($row['regionname'],'') != '') $realmbio .= ' in the '.$row['regionname'].' region';
 		if (nvl($row['timezone'],'') != '') $realmbio .= ' in the '.$row['timezone'].' time zone';
 		$realmbio .= '.';
 		//if (nvl($row['forumid'],'') != '') $realmbio .= ' <a href="http://'.strtolower($row['realmset']).'.battle.net/wow/

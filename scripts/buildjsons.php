@@ -100,7 +100,7 @@ EOF;
 		$fn = strtolower($region).'-'.$realmRow['slug'];
         DebugMessage("Making $fn");
 
-		$regionStats['realms'][$realmRow['slug']] = array('name'=>$realmRow['name'],'counts'=>array('Alliance'=>0,'Horde'=>0,'Unknown'=>0,'Neutral'=>0),'stats'=>array('pvp'=>$realmRow['pvpname'],'rp'=>$realmRow['rpname'],'region'=>$realmRow['region'],'timezone'=>$realmRow['timezonename']));
+		$regionStats['realms'][$realmRow['slug']] = array('name'=>$realmRow['name'],'counts'=>array('Alliance'=>0,'Horde'=>0,'Unknown'=>0,'Neutral'=>0),'stats'=>array('pvp'=>$realmRow['pvpname'],'rp'=>$realmRow['rpname'],'region'=>$realmRow['regionname'],'timezone'=>$realmRow['timezonename']));
 
 		if (!isset($regionStats['demographics'][$realmRow['pvpname']])) $regionStats['demographics'][$realmRow['pvpname']] = array();
 		if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']] = array();
