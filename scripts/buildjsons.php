@@ -68,7 +68,17 @@ foreach ($regions as $region) {
     select r.*,
     case r.pvp when 0 then 'PvE' when 1 then 'PvP' else 'Unknown' end pvpname,
     case r.rp when 0 then 'Normal' when 1 then 'RP' else 'Unknown' end rpname,
-	ifnull(region, 'Unknown') regionname,
+	if(region='US',
+if(locale='pt_BR', 'Brazil', if(locale='es_MX', 'Latin America', if(timezone like 'Australia/%', 'Oceanic', 'United States'))),
+case locale
+when 'de_DE' then 'German'
+when 'en_GB' then 'English'
+when 'es_ES' then 'Spanish'
+when 'fr_FR' then 'French'
+when 'pt_BR' then 'Portuguese'
+when 'it_IT' then 'Italian'
+when 'ru_RU' then 'Russian'
+else 'Unknown' end) regionname,
 	ifnull(timezone, 'Unknown') timezonename
 	from tblRealm r
 	where r.region = ? 
