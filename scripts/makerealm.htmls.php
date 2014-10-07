@@ -268,7 +268,7 @@ when 'fr_FR' then 'French'
 when 'pt_BR' then 'Portuguese'
 when 'it_IT' then 'Italian'
 when 'ru_RU' then 'Russian'
-else 'Unknown' end) regionname from tblRealm r, where region = ? and slug = ?
+else 'Unknown' end) regionname from tblRealm r where region = ? and slug = ?
 EOF;
 
         $stmt = $db->prepare($sql);
