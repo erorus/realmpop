@@ -1,0 +1,2 @@
+battleground leaderboards http://us.battle.net/api/wow/leaderboard/rbg
+challenge mode rankings http://us.battle.net/api/wow/challenge/medivh
