@@ -34,6 +34,16 @@ while (count($characterNames)) {
     GetNextCharacter($characterNames);
 }
 
+$characterNames = GetChallengeModeCharacters($realm);
+
+while (count($characterNames)) {
+    heartbeat();
+    if ($caughtKill)
+        exit;
+
+    GetNextCharacter($characterNames);
+}
+
 DebugMessage('Done! Started '.TimeDiff($startTime));
 
 
@@ -162,6 +172,46 @@ function GetCharacterNames($realm) {
             continue;
 
         $result[$sellerRealm][$seller] = 0;
+    }
+
+    heartbeat();
+    return $result;
+}
+
+function GetChallengeModeCharacters($realm) {
+    global $caughtKill, $allRealms;
+
+    $result = [];
+
+    heartbeat();
+    DebugMessage("Fetching {$realm['region']} {$realm['canonical']} challenge mode");
+    $url = GetBattleNetURL($realm['region'], "wow/challenge/{$realm['canonical']}");
+
+    $json = FetchHTTP($url);
+    $dta = json_decode($json, true);
+    if (!isset($dta['challenge']))
+    {
+        DebugMessage("{$realm['region']} {$realm['canonical']} returned challenge records.", E_USER_WARNING);
+        return $result;
+    }
+
+    foreach ($dta['challenge'] as $challenge) {
+        foreach ($challenge['groups'] as $group) {
+            foreach ($group['members'] as $member) {
+                heartbeat();
+                if ($caughtKill)
+                    return $result;
+
+                if (isset($member['character'])) {
+                    $c = $member['character']['name'];
+                    $r = $member['character']['realm'];
+                    if (isset($allRealms[$r])) {
+                        $result[$r][$c] = 0;
+                    }
+                }
+            }
+
+        }
     }
 
     heartbeat();
