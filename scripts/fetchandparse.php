@@ -52,7 +52,7 @@ function GetNextRealm() {
     global $db, $allRealms, $ownerRealms;
     $db->begin_transaction();
 
-    $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -6, now()) order by lastfetch asc, id asc limit 1 for update');
+    $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -5, now()) order by lastfetch asc, id asc limit 1 for update');
     $stmt->execute();
     $result = $stmt->get_result();
     $realm = DBMapArray($result, null);
