@@ -17,6 +17,7 @@ if (!DBConnect())
     DebugMessage('Cannot connect to db!', E_USER_ERROR);
 
 $allRealms = [];
+$ownerRealms = [];
 if (($realm = GetNextRealm()) === false) {
     DebugMessage('No realms to fetch right now.');
     exit;
@@ -48,7 +49,7 @@ DebugMessage('Done! Started '.TimeDiff($startTime));
 
 
 function GetNextRealm() {
-    global $db, $allRealms;
+    global $db, $allRealms, $ownerRealms;
     $db->begin_transaction();
 
     $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -6, now()) order by lastfetch asc, id asc limit 1 for update');
@@ -71,11 +72,11 @@ function GetNextRealm() {
 
     $db->commit();
 
-    $stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r where house = ?');
-    $stmt->bind_param('i', $realm['house']);
+    $stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r where region = ?');
+    $stmt->bind_param('s', $realm['region']);
     $stmt->execute();
     $result = $stmt->get_result();
-    $realm['ownerrealms'] = DBMapArray($result, 'ownerrealm');
+    $ownerRealms = DBMapArray($result, 'ownerrealm');
     $stmt->close();
 
     $stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r where r.region = ?');
@@ -89,7 +90,7 @@ function GetNextRealm() {
 }
 
 function GetCharacterNames($realm) {
-    global $caughtKill;
+    global $caughtKill, $ownerRealms;
 
     $result = [];
 
@@ -168,7 +169,7 @@ function GetCharacterNames($realm) {
         $seller = $res[1][$x];
         $sellerRealm = $res[2][$x];
 
-        if (!isset($realm['ownerrealms'][$sellerRealm]))
+        if (!isset($ownerRealms[$sellerRealm]))
             continue;
 
         $result[$sellerRealm][$seller] = 0;
@@ -219,7 +220,7 @@ function GetChallengeModeCharacters($realm) {
 }
 
 function GetNextCharacter(&$characterNames) {
-    global $realm, $db, $caughtKill;
+    global $db, $caughtKill, $ownerRealms;
 
     $sellerRealms = array_keys($characterNames);
     do {
@@ -228,16 +229,16 @@ function GetNextCharacter(&$characterNames) {
             unset($characterNames[$sellerRealm]);
             $sellerRealm = '~';
         }
-    } while (!isset($realm['ownerrealms'][$sellerRealm]) && count($sellerRealms));
-    if (!isset($realm['ownerrealms'][$sellerRealm]) && count($sellerRealms) == 0) {
+    } while (!isset($ownerRealms[$sellerRealm]) && count($sellerRealms));
+    if (!isset($ownerRealms[$sellerRealm]) && count($sellerRealms) == 0) {
         if (count($characterNames))
-            DebugMessage('The following realms were not matched:'."\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($realm['ownerrealms'])).'"', E_USER_WARNING);
+            DebugMessage('The following realms were not matched:'."\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($ownerRealms)).'"', E_USER_WARNING);
         $characterNames = [];
         return;
     }
     unset($sellerRealms);
 
-    $realmRow = $realm['ownerrealms'][$sellerRealm];
+    $realmRow = $ownerRealms[$sellerRealm];
 
     reset($characterNames[$sellerRealm]);
     $character = key($characterNames[$sellerRealm]);
@@ -294,7 +295,7 @@ function GetNextCharacter(&$characterNames) {
 }
 
 function GetGuild(&$characterNames, $guild, $realmName) {
-    global $db, $realm, $caughtKill, $allRealms;
+    global $db, $caughtKill, $allRealms;
 
     heartbeat();
     if ($caughtKill)
