@@ -206,7 +206,7 @@ function GetChallengeModeCharacters($realm) {
                     $c = $member['character']['name'];
                     $r = $member['character']['realm'];
                     if (isset($allRealms[$r])) {
-                        $result[$r][$c] = 0;
+                        $result[$allRealms[$r]['ownerrealm']][$c] = 0;
                     }
                 }
             }
