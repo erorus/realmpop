@@ -202,6 +202,13 @@ $htmlend = <<<PHPEOF
 </body></html>
 PHPEOF;
 
+$siteMap = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://realmpop.com/</loc><priority>1.0</priority><changefreq>monthly</changefreq></url>
+
+EOF;
+
 $publicDir = realpath(__DIR__.'/../public');
 
 RunMeNTimes(1);
@@ -221,6 +228,7 @@ foreach($regions as $region) {
         break;
 
 	file_put_contents($publicDir.'/'.strtolower($region).'.html', cookhtml($region));
+    $siteMap .= '<url><loc>https://realmpop.com/'.strtolower($region).'.html</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>'."\n";
 
     $stmt = $db->prepare('select distinct slug from tblRealm where region = ?');
     $stmt->bind_param('s',$region);
@@ -234,8 +242,12 @@ foreach($regions as $region) {
             break;
 
         file_put_contents($publicDir.'/'.strtolower($region).'-'.$slug.'.html', cookhtml($region,$slug));
+        $siteMap .= '<url><loc>https://realmpop.com/'.strtolower($region).'-'.$slug.'.html</loc><priority>0.5</priority><changefreq>weekly</changefreq></url>'."\n";
     }
 }
+
+$siteMap .= "</urlset>";
+file_put_contents($publicDir.'/sitemap.xml', $siteMap);
 
 DebugMessage('Done! Started '.TimeDiff($startTime));
 
