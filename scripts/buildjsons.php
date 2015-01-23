@@ -126,8 +126,12 @@ EOF;
         $stmt->bind_param('i', $realmId);
         $stmt->execute();
         $rst = $stmt->get_result();
+        $rowCount = 0;
 		while ($row = $rst->fetch_assoc()) {
-            heartbeat();
+            $rowCount++;
+            if (heartbeat()) {
+                echo "\r".str_pad($rowCount, 7, ' ', STR_PAD_LEFT).' '.str_pad(round(memory_get_usage()/1048576), 4, ' ', STR_PAD_LEFT)."MB";
+            }
 			//if (substr($row['race'],0,8) == 'Pandaren') $row['race'] = 'Pandaren';
 			if (!isset($result['characters'][$row['gender']])) $result['characters'][$row['gender']] = array();
 			if (!isset($result['characters'][$row['gender']][$row['class']])) $result['characters'][$row['gender']][$row['class']] = array();
@@ -143,6 +147,8 @@ EOF;
 			
 			$regionStats['realms'][$realmRow['slug']]['counts'][$row['side']]++;
 		}
+        echo "\r".str_repeat(' ', 20)."\r";
+
         $rst->close();
         $stmt->close();
 
