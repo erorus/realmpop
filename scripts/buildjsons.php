@@ -7,7 +7,7 @@ require_once('incl/heartbeat.incl.php');
 
 $publicDir = realpath(__DIR__.'/../public');
 
-ini_set('memory_limit','256M');
+ini_set('memory_limit','320M');
 
 RunMeNTimes(1);
 CatchKill();
