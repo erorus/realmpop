@@ -128,8 +128,8 @@ EOF;
         $rst = $stmt->get_result();
         $rowCount = 0;
 		while ($row = $rst->fetch_assoc()) {
-            $rowCount++;
-            if (heartbeat()) {
+            heartbeat();
+            if (++$rowCount % 5000 == 0) {
                 echo "\r".str_pad($rowCount, 7, ' ', STR_PAD_LEFT).' '.str_pad(round(memory_get_usage()/1048576), 4, ' ', STR_PAD_LEFT)."MB";
             }
 			//if (substr($row['race'],0,8) == 'Pandaren') $row['race'] = 'Pandaren';
@@ -146,15 +146,17 @@ EOF;
 			$regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']]++;
 			
 			$regionStats['realms'][$realmRow['slug']]['counts'][$row['side']]++;
+            unset($row);
 		}
-        echo "\r".str_repeat(' ', 20)."\r";
-
         $rst->close();
         $stmt->close();
 
         heartbeat();
         if ($caughtKill)
             break;
+
+        echo "\r".str_repeat(' ', 20)."\r";
+        DebugMessage("Character rows finished $fn ".round(memory_get_usage()/1048576)."MB");
 
         $stmt = $db->prepare('select name, side, members from tblGuild where realm=? order by members desc, name asc');
         $stmt->bind_param('i', $realmId);
