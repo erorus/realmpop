@@ -98,7 +98,7 @@ EOF;
             break;
 
 		$fn = strtolower($region).'-'.$realmRow['slug'];
-        DebugMessage("Making $fn");
+        DebugMessage("Making $fn ".round(memory_get_usage()/1048576)."MB");
 
 		$regionStats['realms'][$realmRow['slug']] = array('name'=>$realmRow['name'],'counts'=>array('Alliance'=>0,'Horde'=>0,'Unknown'=>0,'Neutral'=>0),'stats'=>array('pvp'=>$realmRow['pvpname'],'rp'=>$realmRow['rpname'],'region'=>$realmRow['regionname'],'timezone'=>$realmRow['timezonename']));
 
