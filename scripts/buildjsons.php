@@ -127,7 +127,6 @@ EOF;
         $stmt->execute();
         $rowName = $rowRace = $rowClass = $rowGender = $rowLevel = $rowSide = '';
         $stmt->bind_result($rowName, $rowRace, $rowClass, $rowGender, $rowLevel, $rowSide);
-        $rst = $stmt->get_result();
         $rowCount = 0;
 		while ($stmt->fetch()) {
             heartbeat();
@@ -148,9 +147,7 @@ EOF;
 			$regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace][$rowLevel]++;
 			
 			$regionStats['realms'][$realmRow['slug']]['counts'][$rowSide]++;
-            unset($row);
 		}
-        $rst->close();
         $stmt->close();
 
         heartbeat();
