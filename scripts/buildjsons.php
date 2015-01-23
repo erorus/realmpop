@@ -125,27 +125,29 @@ EOF;
         $stmt = $db->prepare($sql);
         $stmt->bind_param('i', $realmId);
         $stmt->execute();
+        $rowName = $rowRace = $rowClass = $rowGender = $rowLevel = $rowSide = '';
+        $stmt->bind_result($rowName, $rowRace, $rowClass, $rowGender, $rowLevel, $rowSide);
         $rst = $stmt->get_result();
         $rowCount = 0;
-		while ($row = $rst->fetch_assoc()) {
+		while ($stmt->fetch()) {
             heartbeat();
             if (++$rowCount % 5000 == 0) {
                 echo "\r".str_pad($rowCount, 7, ' ', STR_PAD_LEFT).' '.str_pad(round(memory_get_usage()/1048576), 4, ' ', STR_PAD_LEFT)."MB";
             }
 			//if (substr($row['race'],0,8) == 'Pandaren') $row['race'] = 'Pandaren';
-			if (!isset($result['characters'][$row['gender']])) $result['characters'][$row['gender']] = array();
-			if (!isset($result['characters'][$row['gender']][$row['class']])) $result['characters'][$row['gender']][$row['class']] = array();
-			if (!isset($result['characters'][$row['gender']][$row['class']][$row['race']])) $result['characters'][$row['gender']][$row['class']][$row['race']] = array();
-			if (!isset($result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']])) $result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']] = array();
-			$result['characters'][$row['gender']][$row['class']][$row['race']][$row['level']][] = $row['name']; //array('character' => $row['name'], 'guild' => $row['guildname']);
+			if (!isset($result['characters'][$rowGender])) $result['characters'][$rowGender] = array();
+			if (!isset($result['characters'][$rowGender][$rowClass])) $result['characters'][$rowGender][$rowClass] = array();
+			if (!isset($result['characters'][$rowGender][$rowClass][$rowRace])) $result['characters'][$rowGender][$rowClass][$rowRace] = array();
+			if (!isset($result['characters'][$rowGender][$rowClass][$rowRace][$rowLevel])) $result['characters'][$rowGender][$rowClass][$rowRace][$rowLevel] = array();
+			$result['characters'][$rowGender][$rowClass][$rowRace][$rowLevel][] = $rowName; //array('character' => $rowName, 'guild' => $row['guildname']);
 
-			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']] = array();
-			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']] = array();
-			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']] = array();
-			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']] = 0;
-			$regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$row['gender']][$row['class']][$row['race']][$row['level']]++;
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace] = array();
+			if (!isset($regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace][$rowLevel])) $regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace][$rowLevel] = 0;
+			$regionStats['demographics'][$realmRow['pvpname']][$realmRow['rpname']][$realmRow['regionname']][$realmRow['timezonename']][$rowGender][$rowClass][$rowRace][$rowLevel]++;
 			
-			$regionStats['realms'][$realmRow['slug']]['counts'][$row['side']]++;
+			$regionStats['realms'][$realmRow['slug']]['counts'][$rowSide]++;
             unset($row);
 		}
         $rst->close();
