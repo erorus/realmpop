@@ -93,6 +93,7 @@ EOF;
     $stmt->close();
 
     foreach ($realms as $realmId => $realmRow) {
+        heartbeatsleep(15);
         heartbeat();
         if ($caughtKill)
             break;
@@ -180,3 +181,27 @@ EOF;
 }
 
 DebugMessage('Done! Started '.TimeDiff($startTime));
+
+function heartbeatsleep($t)
+{
+    global $caughtKill;
+    $interval = 10; // seconds
+
+    $howMany = floor($t / $interval);
+    $until = time() + $t;
+    for ($x = 0; ($x < $howMany) && ($until > time()); $x++) {
+        heartbeat();
+        if ($caughtKill)
+            exit;
+
+        DebugMessage("Sleeping ".($until - time())." seconds..");
+        sleep($interval);
+    }
+    heartbeat();
+    if ($caughtKill)
+        exit;
+    if ($until > time()) {
+        DebugMessage("Sleeping ".($until - time())." seconds..");
+        sleep($until - time());
+    }
+}
