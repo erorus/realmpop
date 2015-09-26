@@ -1,0 +1,6 @@
+*/5 * * * * /var/realmpop/scripts/heartbeat.sh >> ~/heartbeat.log 2>&1
+
+* * * * * php /var/realmpop/scripts/fetchandparse.php >> ~/fetchandparse.log 2>&1
+0 0 * * * mv ~/fetchandparse.log ~/fetchandparse.yesterday.log
+
+20 0 */3 * * /var/realmpop/scripts/buildfiles.sh > ~/buildfiles.log 2>&1
