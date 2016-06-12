@@ -240,7 +240,6 @@ function GetNextCharacter(&$characterNames) {
 
     $realmRow = $ownerRealms[$sellerRealm];
 
-    $guildsToFetch = [];
     $charsToFetch = [];
     while (count($charsToFetch) < 15 && count($characterNames[$sellerRealm])) {
         reset($characterNames[$sellerRealm]);
@@ -255,13 +254,17 @@ function GetNextCharacter(&$characterNames) {
         $stmt->fetch();
         $stmt->close();
 
-        if ($c > 0) {
-            continue;
+        if ($c == 0) {
+            $charsToFetch[] = $character;
         }
-
-        $charsToFetch[] = $character;
     }
 
+    if (count($charsToFetch) == 0) {
+        DebugMessage("No more characters on {$realmRow['name']} ($totalChars remaining)");
+        return;
+    }
+
+    $guildsToFetch = [];
     $totalChars = 0;
     foreach (array_keys($characterNames) as $k)
         $totalChars += count($characterNames[$k]);
