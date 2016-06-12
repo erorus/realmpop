@@ -240,58 +240,95 @@ function GetNextCharacter(&$characterNames) {
 
     $realmRow = $ownerRealms[$sellerRealm];
 
-    reset($characterNames[$sellerRealm]);
-    $character = key($characterNames[$sellerRealm]);
-    unset($characterNames[$sellerRealm][$character]);
+    $guildsToFetch = [];
+    $charsToFetch = [];
+    while (count($charsToFetch) < 15 && count($characterNames[$sellerRealm])) {
+        reset($characterNames[$sellerRealm]);
+        $character = key($characterNames[$sellerRealm]);
+        unset($characterNames[$sellerRealm][$character]);
 
-    $c = 0;
-    $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, -1, now())');
-    $stmt->bind_param('si', $character, $realmRow['id']);
-    $stmt->execute();
-    $stmt->bind_result($c);
-    $stmt->fetch();
-    $stmt->close();
+        $c = 0;
+        $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, -1, now())');
+        $stmt->bind_param('si', $character, $realmRow['id']);
+        $stmt->execute();
+        $stmt->bind_result($c);
+        $stmt->fetch();
+        $stmt->close();
 
-    if ($c > 0)
-        return;
+        if ($c > 0) {
+            continue;
+        }
+
+        $charsToFetch[] = $character;
+    }
 
     $totalChars = 0;
     foreach (array_keys($characterNames) as $k)
         $totalChars += count($characterNames[$k]);
 
-    DebugMessage("Getting character $character on {$realmRow['name']} ($totalChars remaining)");
-    $url = GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild");
-    $json = FetchHTTP($url);
-    if (!$json) {
-        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned) values (?, ?, NOW()) on duplicate key update scanned=values(scanned), lastmodified=null');
-        $stmt->bind_param('si', $character, $realmRow['id']);
-        $stmt->execute();
-        $stmt->close();
+    DebugMessage("Getting characters ".implode(',', $charsToFetch)." on {$realmRow['name']} ($totalChars remaining)");
 
-        return;
+    $curlOpts = [
+        CURLOPT_RETURNTRANSFER  => true,
+        CURLOPT_FOLLOWLOCATION  => true,
+        CURLOPT_MAXREDIRS       => 2,
+        CURLOPT_TIMEOUT         => 10,
+        CURLOPT_ENCODING        => 'gzip',
+    ];
+
+    $mh = curl_multi_init();
+    curl_multi_setopt($mh, CURLMOPT_PIPELINING, 3);
+
+    $curls = [];
+    foreach ($charsToFetch as $character) {
+        $curls[$character] = curl_init(GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild"));
+        curl_setopt_array($curls[$character], $curlOpts);
+        curl_multi_add_handle($mh, $curls[$character]);
     }
 
-    heartbeat();
-    if ($caughtKill)
-        return;
+    $active = false;
 
-    $dta = json_decode($json, true);
-    if (json_last_error() != JSON_ERROR_NONE)
-        return;
+    while (CURLM_CALL_MULTI_PERFORM == ($mrc = curl_multi_exec($mh, $active)));
 
-    if (!isset($dta['name']))
-        return;
+    while ($active && $mrc == CURLM_OK) {
+        if (curl_multi_select($mh) != -1) {
+            while (CURLM_CALL_MULTI_PERFORM == ($mrc = curl_multi_exec($mh, $active)));
+        }
+        usleep(100000);
+    }
 
-    $dta['gender']++; // line up with db enum
+    foreach ($charsToFetch as $character) {
+        curl_multi_remove_handle($mh, $curls[$character]);
+        $dta = json_decode(curl_multi_getcontent($curls[$character]), true);
+        if (json_last_error() != JSON_ERROR_NONE || !isset($dta['name'])) {
+            $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned) values (?, ?, NOW()) on duplicate key update scanned=values(scanned), lastmodified=null');
+            $stmt->bind_param('si', $character, $realmRow['id']);
+            $stmt->execute();
+            $stmt->close();
+        } else {
+            $dta['gender']++; // line up with db enum
 
-    $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level), lastmodified=null');
-    $stmt->bind_param('siiiii', $dta['name'], $realmRow['id'], $dta['race'], $dta['class'], $dta['gender'], $dta['level']);
-    $stmt->execute();
-    $stmt->close();
+            $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level), lastmodified=null');
+            $stmt->bind_param('siiiii', $dta['name'], $realmRow['id'], $dta['race'], $dta['class'], $dta['gender'], $dta['level']);
+            $stmt->execute();
+            $stmt->close();
 
-    if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name'])
-        GetGuild($characterNames, $dta['guild']['name'], $dta['guild']['realm']);
+            if (isset($dta['guild']) && isset($dta['guild']['name']) && $dta['guild']['name']) {
+                $guildsToFetch[md5($dta['guild']['name']) . md5($dta['guild']['realm'])] = [$dta['guild']['name'], $dta['guild']['realm']];
+            }
+        }
+        curl_close($curls[$character]);
+    }
 
+    curl_multi_close($mh);
+
+    foreach ($guildsToFetch as $params) {
+        heartbeat();
+        if ($caughtKill) {
+            return;
+        }
+        GetGuild($characterNames, $params[0], $params[1]);
+    }
 }
 
 function GetGuild(&$characterNames, $guild, $realmName) {
