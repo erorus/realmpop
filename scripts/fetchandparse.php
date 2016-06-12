@@ -263,7 +263,7 @@ function GetNextCharacter(&$characterNames) {
     $url = GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild");
     $json = FetchHTTP($url);
     if (!$json) {
-        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned) values (?, ?, NOW()) on duplicate key update scanned=values(scanned)');
+        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned) values (?, ?, NOW()) on duplicate key update scanned=values(scanned), lastmodified=null');
         $stmt->bind_param('si', $character, $realmRow['id']);
         $stmt->execute();
         $stmt->close();
@@ -284,7 +284,7 @@ function GetNextCharacter(&$characterNames) {
 
     $dta['gender']++; // line up with db enum
 
-    $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level)');
+    $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level), lastmodified=null');
     $stmt->bind_param('siiiii', $dta['name'], $realmRow['id'], $dta['race'], $dta['class'], $dta['gender'], $dta['level']);
     $stmt->execute();
     $stmt->close();
@@ -364,7 +364,7 @@ function GetGuild(&$characterNames, $guild, $realmName) {
         $charCount++;
         $member['character']['gender']++; // line up with db enum
 
-        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level)');
+        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update lastmodified=null, scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level)');
         $stmt->bind_param('siiiii',
             $member['character']['name'],
             $allRealms[$member['character']['realm']]['id'],
