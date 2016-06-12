@@ -52,7 +52,7 @@ function GetNextRealm() {
     global $db, $allRealms, $ownerRealms;
     $db->begin_transaction();
 
-    $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -5, now()) order by lastfetch asc, id asc limit 1 for update');
+    $stmt = $db->prepare('select * from tblRealm where canonical is not null and ifnull(lastfetch, \'2000-01-01\') < timestampadd(hour, -3, now()) order by lastfetch asc, id asc limit 1 for update');
     $stmt->execute();
     $result = $stmt->get_result();
     $realm = DBMapArray($result, null);
@@ -245,7 +245,7 @@ function GetNextCharacter(&$characterNames) {
     unset($characterNames[$sellerRealm][$character]);
 
     $c = 0;
-    $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, if(level is null, -1, -4), now())');
+    $stmt = $db->prepare('select count(*) from tblCharacter where name=? and realm=? and scanned > timestampadd(week, -1, now())');
     $stmt->bind_param('si', $character, $realmRow['id']);
     $stmt->execute();
     $stmt->bind_result($c);
@@ -284,7 +284,7 @@ function GetNextCharacter(&$characterNames) {
 
     $dta['gender']++; // line up with db enum
 
-    $stmt = $db->prepare('replace into tblCharacter (name, realm, guild, scanned, race, class, gender, level) values (?, ?, null, NOW(), ?, ?, ?, ?)');
+    $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level)');
     $stmt->bind_param('siiiii', $dta['name'], $realmRow['id'], $dta['race'], $dta['class'], $dta['gender'], $dta['level']);
     $stmt->execute();
     $stmt->close();
@@ -364,11 +364,10 @@ function GetGuild(&$characterNames, $guild, $realmName) {
         $charCount++;
         $member['character']['gender']++; // line up with db enum
 
-        $stmt = $db->prepare('replace into tblCharacter (name, realm, guild, scanned, race, class, gender, level) values (?, ?, ?, NOW(), ?, ?, ?, ?)');
-        $stmt->bind_param('siiiiii',
+        $stmt = $db->prepare('insert into tblCharacter (name, realm, scanned, race, class, gender, level) values (?, ?, NOW(), ?, ?, ?, ?) on duplicate key update scanned=values(scanned), race=values(race), class=values(class), gender=values(gender), level=values(level)');
+        $stmt->bind_param('siiiii',
             $member['character']['name'],
             $allRealms[$member['character']['realm']]['id'],
-            $guildId,
             $member['character']['race'],
             $member['character']['class'],
             $member['character']['gender'],
