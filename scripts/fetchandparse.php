@@ -241,7 +241,7 @@ function GetNextCharacter(&$characterNames) {
     $realmRow = $ownerRealms[$sellerRealm];
 
     $charsToFetch = [];
-    while (count($charsToFetch) < 15 && count($characterNames[$sellerRealm])) {
+    while (count($charsToFetch) < 5 && count($characterNames[$sellerRealm])) {
         reset($characterNames[$sellerRealm]);
         $character = key($characterNames[$sellerRealm]);
         unset($characterNames[$sellerRealm][$character]);
