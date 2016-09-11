@@ -77,7 +77,7 @@ $htmlrealm = <<<PHPEOF
 		<div style="position: relative; height: 1.5em">
 			<div style="position: absolute; width: 200px; text-align: right">0</div>
 			<div id="divLvlSlider" style="width: 450px; position: absolute; left: 225px"></div>
-			<div style="position: absolute; width: 220px; left: 700px">100</div>
+			<div style="position: absolute; width: 220px; left: 700px">110</div>
 
 		</div>
 	</td>
@@ -147,7 +147,7 @@ $htmlrealmset = <<<PHPEOF
 		<div style="position: relative; height: 1.5em">
 			<div style="position: absolute; width: 200px; text-align: right">0</div>
 			<div id="divLvlSlider" style="width: 450px; position: absolute; left: 225px"></div>
-			<div style="position: absolute; width: 220px; left: 700px">100</div>
+			<div style="position: absolute; width: 220px; left: 700px">110</div>
 
 		</div>
 	</td>
