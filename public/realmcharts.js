@@ -3,7 +3,7 @@
 	function stickevent(o,ev,ptr){if(o.addEventListener)o.addEventListener(ev,ptr,false);else if(o.attachEvent)o.attachEvent('on'+ev,ptr);}
 
 	var __connectedRealms = {};
-    var __maxLevel = 100;
+    var __maxLevel = 110;
 
 	//google.load('jquery','1');
 	//google.load('jqueryui','1');
@@ -186,7 +186,7 @@
 		var factionlookup = [];
 		for (f in factions) for (x = 0; x < factions[f].length; x++) factionlookup[factions[f][x]] = f;
 		var colorset = {
-			'Death Knight':'#C41F3B','Druid':'#FF7D0A','Hunter':'#ABD473','Mage':'#69CCF0','Monk':'#008467',
+			'Death Knight':'#C41F3B','Demon Hunter':'#A330C9','Druid':'#FF7D0A','Hunter':'#ABD473','Mage':'#69CCF0','Monk':'#008467',
 			'Paladin':'#F58CBA','Priest':'#FFFFFF','Rogue':'#FFF569','Shaman':'#0070DE','Warlock':'#9482C9','Warrior':'#C79C6E',
 			'Male':'#338833','Female':'#883388','Horde':'#883333','Alliance':'#223355',
 			'Blood Elf':'#cc3333','Draenei':'#9a73b6','Dwarf':'#6dc161','Undead':'#335566','Gnome':'#f19759','Goblin':'#aacc66',
