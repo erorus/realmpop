@@ -21,22 +21,19 @@ $htmlheader = <<<PHPEOF
 .tablesorter th.headerSortUp { background-image: url(images/sort.asc.gif); }
 .tablesorter th.headerSortDown { background-image: url(images/sort.desc.gif); }
 .tablesorter td {border: 1px solid #EEE; padding: 2px}
+.switch_placeholder { margin: 10px auto; }
 a {color: #000099}
 </style>
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script async src="//delivery.e.switchadhub.com/adserver/sat.js"></script>
 </head>
 <body style="margin: 0; font-family: 'Abel', sans-serif">
 <div style="margin: 0 auto; width: 900px; vertical-align: bottom; padding-top: 10px; padding-bottom: 10px; position: relative">
 <h1>PRETTYREALM <span class="nobr">Realm Pop</span></h1>
 <div id="divRealmBio" style="margin-bottom: 1.5em">REALMBIO</div>
 <div align="center">
-<ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-1018837251546750"
-     data-ad-slot="6730965026"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+<!-- Ad Unit [7041] Top 728x90 -->
+<div id="switch_placeholder_bc924decd73cad3908cc2bf0f2f980e2" class="switch_placeholder"></div>
+<script> (__scads = window.__scads || []).push({"z":7041,"targetId":"switch_placeholder_bc924decd73cad3908cc2bf0f2f980e2","domain":"delivery.e.switchadhub.com","width":"0","height":"0"}); </script>
 <br>
 Click a pie wedge to narrow down, click again to branch out. Find lists and navigation at the bottom of the page.
 PHPEOF;
@@ -164,13 +161,9 @@ $htmlend = <<<PHPEOF
 </div>
 <br>
 <div align="center">
-<ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-1018837251546750"
-     data-ad-slot="6591093962"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+<!-- Ad Unit [7042] Bottom 728x90 -->
+<div id="switch_placeholder_0d2427fb14114ee0c382749a9aa631e1" class="switch_placeholder"></div>
+<script> (__scads = window.__scads || []).push({"z":7042,"targetId":"switch_placeholder_0d2427fb14114ee0c382749a9aa631e1","domain":"delivery.e.switchadhub.com","width":"0","height":"0"}); </script>
 </div>
 
 <div align="center" style="font-size: 9px; margin-top: 20px; font-family: sans-serif">Realm Pop uses names and images from World of Warcraft, and data proprietary to Blizzard Entertainment, Inc.<br>World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries.</div>
