@@ -24,6 +24,7 @@ $htmlheader = <<<PHPEOF
 .switch_placeholder { margin: 10px auto; }
 a {color: #000099}
 </style>
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <script async src="//delivery.e.switchadhub.com/adserver/sat.js"></script>
 </head>
 <body style="margin: 0; font-family: 'Abel', sans-serif">
