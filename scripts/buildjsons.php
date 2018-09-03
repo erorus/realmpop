@@ -116,7 +116,7 @@ ifnull(c.race,'Unknown') race,
 ifnull(c.class,'Unknown') class,
 ifnull(c.gender,'Unknown') gender,
 ifnull(c.level,0) level,
-ifnull(s.side,'Unknown') side 
+ifnull(s.side,'Neutral') side 
 from tblCharacter c
 left join tblSide s on c.race=s.race
 where c.realm = ?

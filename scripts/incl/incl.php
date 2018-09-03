@@ -6,7 +6,10 @@ date_default_timezone_set('UTC');
 
 error_reporting(E_ALL);
 
-require_once(__DIR__.'/database.credentials.php');
+require_once __DIR__.'/database.credentials.php';
+require_once __DIR__ . '/NewsstandHTTP.incl.php';
+
+use Newsstand\HTTP;
 
 $db = false;
 
@@ -110,69 +113,16 @@ function DBMapArray(&$result, $key = false, $autoClose = true)
     return $tr;
 }
 
-function FetchHTTP($url, $inHeaders = array(), &$outHeaders = array())
-{
-    static $isRetry = false;
-    global $fetchHTTPErrorCaught;
-
-    $wasRetry = $isRetry;
-    $isRetry = false;
-
-    $fetchHTTPErrorCaught = false;
-    if (!isset($inHeaders['Connection'])) $inHeaders['Connection']='Keep-Alive';
-    $inHeaders['Accept-Encoding'] = 'gzip';
-    $http_opt = array(
-        'timeout' => 60,
-        'connecttimeout' => 6,
-        'headers' => $inHeaders,
-        'compress' => true,
-        'redirect' => 3,
-    );
-    //if ($eTag) $http_opt['etag'] = $eTag;
-
-    $http_info = array();
-    $fetchHTTPErrorCaught = false;
-    $oldErrorReporting = error_reporting(error_reporting()|E_WARNING);
-    set_error_handler('FetchHTTPError',E_WARNING);
-    $data = http_parse_message(http_get($url,$http_opt,$http_info));
-    restore_error_handler();
-    error_reporting($oldErrorReporting);
-    unset($oldErrorReporting);
-
-    if (!$data) {
-        $outHeaders = array();
-        return false;
+function FetchHTTP($url, $inHeaders = array(), &$outHeaders = array()) {
+    static $curlOpts = false;
+    if ($curlOpts === false) {
+        $curlOpts = [];
+        if (defined('RP_CURL_INTERFACE')) {
+            $curlOpts[CURLOPT_INTERFACE] = RP_CURL_INTERFACE;
+        }
     }
 
-    $outHeaders = array_merge(array(
-        'httpVersion' => $data->httpVersion,
-        'responseCode' => $data->responseCode,
-        'responseStatus' => $data->responseStatus,
-    ), $data->headers);
-
-    //if (isset($data->headers['Etag']))
-    //    $eTag = $data->headers['Etag'];
-
-    if ($fetchHTTPErrorCaught) return false;
-    if (preg_match('/^2\d\d$/',$http_info['response_code']) > 0)
-        return $data->body;
-    elseif (!$wasRetry && isset($data->headers['Retry-After']))
-    {
-        $delay = intval($data->headers['Retry-After'],10);
-        DebugMessage("Asked to wait $delay seconds for $url", E_USER_NOTICE);
-        if ($delay > 0 && $delay <= 10)
-            sleep($delay);
-        $isRetry = true;
-        return FetchHTTP($url, $inHeaders, $outHeaders);
-    }
-    else
-        return false;
-}
-
-function FetchHTTPError($errno, $errstr, $errfile,  $errline, $errcontext) {
-    global $fetchHTTPErrorCaught;
-    $fetchHTTPErrorCaught = true;
-    return true;
+    return HTTP::Get($url, $inHeaders, $outHeaders, $curlOpts);
 }
 
 function TimeDiff($time, $opt = array()) {

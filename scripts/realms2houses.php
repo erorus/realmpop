@@ -48,12 +48,15 @@ foreach ($regions as $region)
     $stmt->close();
     $nextId++;
 
-    $stmt = $db->prepare('insert into tblRealm (id, region, slug, name, locale, pvp, rp, timezone, battlegroup, population) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update name=values(name), locale=values(locale), pvp=values(pvp), rp=values(rp), timezone=values(timezone), battlegroup=values(battlegroup), population=values(population)');
+    $stmt = $db->prepare('insert into tblRealm (id, region, slug, name, locale, rp, timezone, population) values (?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update name=values(name), locale=values(locale), rp=values(rp), timezone=values(timezone), population=values(population)');
     foreach ($realms['realms'] as $realm)
     {
-        $pvp = stripos($realm['type'],'pvp') !== false ? 1 : 0;
-        $rp = stripos($realm['type'],'rp') !== false ? 1 : 0;
-        $stmt->bind_param('issssiisss', $nextId, $region, $realm['slug'], $realm['name'], $realm['locale'], $pvp, $rp, $realm['timezone'], $realm['battlegroup'], $realm['population']);
+        $rp = stripos($realm['type'],'roleplaying') !== false ? 1 : 0;
+        $population = $realm['population'];
+        if ($population == 'n/a') {
+            $population = 'New Players';
+        }
+        $stmt->bind_param('issssiss', $nextId, $region, $realm['slug'], $realm['name'], $realm['locale'], $rp, $realm['timezone'], $population);
         $stmt->execute();
         if ($db->affected_rows > 0)
             $nextId++;

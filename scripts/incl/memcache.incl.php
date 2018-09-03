@@ -1,34 +1,37 @@
 <?php
 
-$memcache = new Memcache;
-if (!$memcache->connect('127.0.0.1', 11211))
-    DebugMessage('Cannot connect to memcached!', E_USER_ERROR);
-$memcache->setCompressThreshold(50*1024);
+$memcache = new Memcached;
+if (!$memcache->getServerList()) {
+    $memcache->addServer('127.0.0.1', 11211);
+}
+$memcache->setOptions([
+    Memcached::OPT_BINARY_PROTOCOL => true,
+]);
 
 function MCGet($key)
 {
     global $memcache;
 
-    return $memcache->get('rp_'.$key);
+    return is_array($key) ? $memcache->getMulti($key) : $memcache->get($key);
 }
 
 function MCSet($key, $val, $expire = 10800)
 {
     global $memcache;
 
-    return $memcache->set('rp_'.$key, $val, false, $expire);
+    return $memcache->set($key, $val, $expire);
 }
 
 function MCAdd($key, $val, $expire = 10800)
 {
     global $memcache;
 
-    return $memcache->add('rp_'.$key, $val, false, $expire);
+    return $memcache->add($key, $val, $expire);
 }
 
 function MCDelete($key)
 {
     global $memcache;
 
-    return $memcache->delete('rp_'.$key);
+    return $memcache->delete($key);
 }
