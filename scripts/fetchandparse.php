@@ -35,10 +35,10 @@ $allRealms = DBMapArray($result, ['region', 'name']);
 $stmt->close();
 
 $toSleep = 0;
-while ((!$caughtKill) && (time() < ($startTime + 60 * 30))) {
+while ((!CatchKill()) && (time() < ($startTime + 60 * 30))) {
     heartbeat();
     sleep(min($toSleep, 10));
-    if ($caughtKill) {
+    if (CatchKill()) {
         break;
     }
     $toSleep = NextDataFile();
@@ -52,7 +52,7 @@ $characterNames = GetChallengeModeCharacters($realm);
 
 while (count($characterNames)) {
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         exit;
 
     GetNextCharacter($characterNames);
@@ -116,14 +116,12 @@ function NextDataFile() {
 }
 
 function ParseAuctionData($region, $maxId, $json) {
-    global $caughtKill;
-
     $characterNames = GetCharacterNames($region, $maxId, $json);
     unset($json);
 
     while (count($characterNames)) {
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             exit;
 
         GetNextCharacter($region, $characterNames);
@@ -158,7 +156,7 @@ function GetCharacterNames($region, $maxId, $json) {
 
 /*
 function GetChallengeModeCharacters($realm) {
-    global $caughtKill, $allRealms;
+    global $allRealms;
 
     $result = [];
 
@@ -178,7 +176,7 @@ function GetChallengeModeCharacters($realm) {
         foreach ($challenge['groups'] as $group) {
             foreach ($group['members'] as $member) {
                 heartbeat();
-                if ($caughtKill)
+                if (CatchKill())
                     return $result;
 
                 if (isset($member['character'])) {
@@ -199,7 +197,7 @@ function GetChallengeModeCharacters($realm) {
 */
 
 function GetNextCharacter($region, &$characterNames) {
-    global $db, $caughtKill, $ownerRealms;
+    global $db, $ownerRealms;
 
     $sellerRealms = array_keys($characterNames);
     do {
@@ -273,7 +271,7 @@ function GetNextCharacter($region, &$characterNames) {
 
     if ($guild) {
         heartbeat();
-        if ($caughtKill) {
+        if (CatchKill()) {
             return;
         }
         GetGuild($region, $characterNames, $guild['name'], $guild['realm']);
@@ -281,10 +279,10 @@ function GetNextCharacter($region, &$characterNames) {
 }
 
 function GetGuild($region, &$characterNames, $guild, $realmName) {
-    global $db, $caughtKill, $allRealms;
+    global $db, $allRealms;
 
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         return;
 
     if (!isset($allRealms[$region][$realmName])) {
@@ -321,7 +319,7 @@ function GetGuild($region, &$characterNames, $guild, $realmName) {
         return;
 
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         return;
 
     $dta = json_decode($json, true);

@@ -17,7 +17,7 @@ if (!DBConnect())
     DebugMessage('Cannot connect to db!', E_USER_ERROR);
 
 heartbeat();
-if ($caughtKill)
+if (CatchKill())
     exit;
 
 $sql = <<<EOF
@@ -40,7 +40,7 @@ foreach ($rows as $row)
 file_put_contents($publicDir.'/connected-realms.json',json_encode($cr));
 
 heartbeat();
-if ($caughtKill)
+if (CatchKill())
     exit;
 
 if (isset($argv[1])) {
@@ -55,12 +55,12 @@ $regions = DBMapArray($result, null);
 $stmt->close();
 
 heartbeat();
-if ($caughtKill)
+if (CatchKill())
     exit;
 
 foreach ($regions as $region) {
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         break;
 
 	$regionStats = array('realms' => array(), 'demographics' => array());
@@ -94,7 +94,7 @@ EOF;
     foreach ($realms as $realmId => $realmRow) {
         //heartbeatsleep(15);
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             break;
 
 		$fn = strtolower($region).'-'.$realmRow['slug'];
@@ -149,7 +149,7 @@ EOF;
         $stmt->close();
 
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             break;
 
         echo "\r".str_repeat(' ', 20)."\r";
@@ -174,7 +174,7 @@ EOF;
 		unset($result);
 	}
 
-    if (!$caughtKill)
+    if (!CatchKill())
 	    file_put_contents($publicDir.'/'.strtolower($region).'.json',json_encode($regionStats));
 }
 
@@ -182,21 +182,20 @@ DebugMessage('Done! Started '.TimeDiff($startTime));
 
 function heartbeatsleep($t)
 {
-    global $caughtKill;
     $interval = 10; // seconds
 
     $howMany = floor($t / $interval);
     $until = time() + $t;
     for ($x = 0; ($x < $howMany) && ($until > time()); $x++) {
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             exit;
 
         DebugMessage("Sleeping ".($until - time())." seconds..");
         sleep($interval);
     }
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         exit;
     if ($until > time()) {
         DebugMessage("Sleeping ".($until - time())." seconds..");

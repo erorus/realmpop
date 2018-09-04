@@ -21,7 +21,7 @@ $regions = array('US','EU');
 foreach ($regions as $region)
 {
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         break;
     if (isset($argv[1]) && $argv[1] != $region)
         continue;
@@ -65,7 +65,7 @@ foreach ($regions as $region)
     $stmt->close();
 
     GetRussianOwnerRealms($region);
-    if ($caughtKill)
+    if (CatchKill())
         break;
 
     $stmt = $db->prepare('select slug, house, name, ifnull(ownerrealm, replace(name, \' \', \'\')) as ownerrealm from tblRealm where region = ?');
@@ -84,7 +84,7 @@ foreach ($regions as $region)
     foreach ($bySlug as $row)
     {
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             break 2;
 
         $slug = $row['slug'];
@@ -155,7 +155,7 @@ foreach ($regions as $region)
     }
 
     heartbeat();
-    if ($caughtKill)
+    if (CatchKill())
         break;
 
     $stmt = $db->prepare('select ifnull(max(house),0) from tblRealm');
@@ -274,7 +274,7 @@ function GetDataRealms($region, $hash)
 
 function GetRussianOwnerRealms($region)
 {
-    global $db, $caughtKill;
+    global $db;
 
     $ruID = 0;
     $ruSlug = '';
@@ -286,7 +286,7 @@ function GetRussianOwnerRealms($region)
     while ($stmt->fetch())
     {
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             return;
 
         DebugMessage("Getting ownerrealm for russian slug $ruSlug");
@@ -308,13 +308,13 @@ function GetRussianOwnerRealms($region)
         $ruToRun[] = sprintf('update tblRealm set ownerrealm = \'%s\' where id = %d', $db->escape_string($ruOwner), $ruID);
     }
     $stmt->close();
-    if ($caughtKill)
+    if (CatchKill())
         return;
 
     foreach ($ruToRun as $sql)
     {
         heartbeat();
-        if ($caughtKill)
+        if (CatchKill())
             return;
         if (!$db->real_query($sql))
             DebugMessage(sprintf("%s: %s", $sql, $db->error), E_USER_WARNING);

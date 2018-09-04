@@ -172,32 +172,35 @@ function TimeDiff($time, $opt = array()) {
     return $str;
 }
 
-$caughtKill = false;
-function CatchKill()
-{
+function CatchKill($use = true) {
+    static $caughtKill = false;
     static $setCatch = false;
-    if ($setCatch)
-        return;
+
+    if (PHP_SAPI != 'cli') {
+        DebugMessage('Cannot catch kill if not CLI', E_USER_WARNING);
+        return false;
+    }
+
+    if (!$use) {
+        $setCatch = $caughtKill = false;
+        return pcntl_signal(SIGTERM, SIG_DFL);
+    }
+
+    if ($setCatch) {
+        pcntl_signal_dispatch();
+        return $caughtKill;
+    }
+
     $setCatch = true;
 
-    if (php_sapi_name() != 'cli')
-    {
-        DebugMessage('Cannot catch kill if not CLI', E_USER_WARNING);
-        return;
-    }
+    pcntl_signal(SIGTERM, function($sig) use (&$caughtKill) {
+        if ($sig == SIGTERM) {
+            $caughtKill = true;
+            DebugMessage('Caught kill message, exiting soon..');
+        }
+    });
 
-    declare(ticks = 1);
-    pcntl_signal(SIGTERM, 'KillSigHandler');
-}
-
-function KillSigHandler($sig)
-{
-    global $caughtKill;
-    if ($sig == SIGTERM)
-    {
-        $caughtKill = true;
-        DebugMessage('Caught kill message, exiting soon..');
-    }
+    return false;
 }
 
 function RunMeNTimes($howMany = 1)

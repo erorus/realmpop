@@ -209,7 +209,7 @@ $regions = DBMapArray($result, null);
 $stmt->close();
 
 foreach($regions as $region) {
-    if ($caughtKill)
+    if (CatchKill())
         break;
 
 	file_put_contents($publicDir.'/'.strtolower($region).'.html', cookhtml($region));
@@ -223,7 +223,7 @@ foreach($regions as $region) {
     $stmt->close();
 
 	foreach($slugs as $slug) {
-        if ($caughtKill)
+        if (CatchKill())
             break;
 
         file_put_contents($publicDir.'/'.strtolower($region).'-'.$slug.'.html', cookhtml($region,$slug));
