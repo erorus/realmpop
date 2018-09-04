@@ -2,7 +2,8 @@
 
 $startTime = time();
 
-require_once('incl/incl.php');
+require_once 'incl/incl.php';
+require_once 'incl/constants.php';
 
 $htmlheader = <<<PHPEOF
 <!DOCTYPE html>
@@ -10,8 +11,8 @@ $htmlheader = <<<PHPEOF
 <head>
 <title>PRETTYREALM Realm Pop</title>
 <link rel="shortcut icon" href="/favicon.ico"></link>
-<link href='//fonts.googleapis.com/css?family=Abel' rel='stylesheet' type='text/css'></link>
-<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css" type="text/css"></link>
+<link href='https://fonts.googleapis.com/css?family=Abel' rel='stylesheet' type='text/css'></link>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css" type="text/css"></link>
 <style type="text/css">
 .nobr {white-space: nowrap}
 #tblCharts td {padding-bottom: 25px}
@@ -23,7 +24,7 @@ $htmlheader = <<<PHPEOF
 .tablesorter td {border: 1px solid #EEE; padding: 2px}
 a {color: #000099}
 </style>
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body style="margin: 0; font-family: 'Abel', sans-serif">
 <div style="margin: 0 auto; width: 900px; vertical-align: bottom; padding-top: 10px; padding-bottom: 10px; position: relative">
@@ -38,13 +39,13 @@ a {color: #000099}
 (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
 <br>
-Click a pie wedge to narrow down, click again to branch out. Find lists and navigation at the bottom of the page.
 PHPEOF;
 
 // <div style="position: absolute; left: -50px; height:1000px; border-right: 1px dashed #999"></div>
 
 
 $htmlrealm = <<<PHPEOF
+Click a pie wedge to narrow down, click again to branch out. Find navigation at the bottom of the page.
 <div style="position: relative">
 <div id="divLoading" style="position: fixed; width: 900px; text-align: center; margin-top: 4em; font-size: larger">
 	<div id="divLoadingText">Loading code..</div>
@@ -77,20 +78,11 @@ $htmlrealm = <<<PHPEOF
 		<div style="position: relative; height: 1.5em">
 			<div style="position: absolute; width: 200px; text-align: right">0</div>
 			<div id="divLvlSlider" style="width: 450px; position: absolute; left: 225px"></div>
-			<div style="position: absolute; width: 220px; left: 700px">110</div>
+			<div style="position: absolute; width: 220px; left: 700px">$MAX_LEVEL</div>
 
 		</div>
 	</td>
 </tr>
-</table>
-<table border="0" cellspacing="0" cellpadding="0" id="tblLists" style="margin-bottom: 25px">
-<tr><td width="500">
-	<div id="divTtlList" class="ttl">Characters</div>
-	<div id="chtList" style="width: 500px; height: 450px; overflow-y: auto"></div>
-</td><td width="400">
-	<div id="divTtlGuildList" class="ttl">Guilds</div>
-	<div id="chtGuildList" style="width: 350px; margin-left: 50px; height: 450px; overflow-y: auto"></div>
-</td></tr>
 </table>
 </div>
 </div>
@@ -98,6 +90,7 @@ $htmlrealm = <<<PHPEOF
 PHPEOF;
 
 $htmlrealmset = <<<PHPEOF
+Click a pie wedge to narrow down, click again to branch out. Find lists and navigation at the bottom of the page.
 <div style="position: relative">
 <div id="divLoading" style="position: fixed; width: 900px; text-align: center; margin-top: 4em; font-size: larger">
 	<div id="divLoadingText">Loading code..</div>
@@ -107,48 +100,39 @@ $htmlrealmset = <<<PHPEOF
 <div class="ttl" style="position: absolute; left: 350px; width: 200px; top: 500px; text-align: center; z-index: 2" id="divResults"></div>
 <table border="0" cellspacing="0" cellpadding="0" id="tblCharts" style="width: 900px">
 	<tr>
-	<td width="225">
-		<div id="divTtlPvP" class="ttl">PvP</div>
-		<div id="chtByPvP" style="width: 225px; height: 175px"></div>
-	</td>
-	<td width="225">
+	<td width="450">
 		<div id="divTtlRP" class="ttl">RP</div>
-		<div id="chtByRP" style="width: 225px; height: 175px"></div>
+		<div id="chtByRP" style="width: 450px; height: 175px"></div>
 	</td>
-	<td width="225">
+	<td width="450">
 		<div id="divTtlRegion" class="ttl">Region</div>
-		<div id="chtByRegion" style="width: 225px; height: 175px"></div>
-	</td>
-	<td width="225">
-		<div id="divTtlTimezone" class="ttl">Time Zone</div>
-		<div id="chtByTimezone" style="width: 225px; height: 175px"></div>
+		<div id="chtByRegion" style="width: 450px; height: 175px"></div>
 	</td>
 	</tr><tr>
-	<td width="450" colspan="2">
+	<td width="450">
 		<div id="divTtlFaction" class="ttl">Faction</div>
 		<div id="chtByFaction" style="width: 450px; height: 250px"></div>
 	</td>
-	<td width="450" colspan="2">
+	<td width="450">
 		<div id="divTtlGender" class="ttl">Gender</div>
 		<div id="chtByGender" style="width: 450px; height: 250px"></div>
 	</td>
 	</tr><tr>
-	<td width="450" colspan="2">
+	<td width="450">
 		<div id="divTtlRace" class="ttl">Race</div>
 		<div id="chtByRace" style="width: 450px; height: 350px"></div>
 	</td>
-	<td width="450" colspan="2">
+	<td width="450">
 		<div id="divTtlClass" class="ttl">Class</div>
 		<div id="chtByClass" style="width: 450px; height: 350px"></div>
 	</td>
 	</tr><tr>
-	<td width="900" colspan="4">
+	<td width="900" colspan="2">
 		<div id="divTtlLevel" class="ttl">Level</div>
 		<div style="position: relative; height: 1.5em">
 			<div style="position: absolute; width: 200px; text-align: right">0</div>
 			<div id="divLvlSlider" style="width: 450px; position: absolute; left: 225px"></div>
-			<div style="position: absolute; width: 220px; left: 700px">110</div>
-
+			<div style="position: absolute; width: 220px; left: 700px">$MAX_LEVEL</div>
 		</div>
 	</td>
 </tr>
@@ -179,10 +163,11 @@ $htmlend = <<<PHPEOF
 	var __realmset="REALMSET";
 	var __slug="SLUG";
 	var __jsonsize="JSONSIZE";
+	var __lookups=LOOKUPJSON;
 </script>
-<script type="text/javascript" src="//www.google.com/jsapi"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/jquery-ui.min.js"></script>
 <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
 <script type="text/javascript" src="realmcharts.js"></script>
 <script type="text/javascript">
@@ -252,7 +237,7 @@ file_put_contents($publicDir.'/sitemap.xml', $siteMap);
 DebugMessage('Done! Started '.TimeDiff($startTime));
 
 
-// PRETTYREALM SLUG REALMBIO REALMSET JSONSIZE
+// PRETTYREALM SLUG REALMBIO REALMSET JSONSIZE LOOKUPJSON
 
 function cookhtml($realmset, $slug='') {
 	global $publicDir,$db;
@@ -296,7 +281,7 @@ EOF;
 		if ($realmslug != $row['slug']) 
 			$realmslug = $row['slug'];
 		
-		$realmbio = $row['region'].' '.$row['name'].' is a '.(($row['rp']=='1')?'RP ':'Normal ').(($row['pvp']=='1')?'PvP':'PvE').' realm';
+		$realmbio = $row['region'].' '.$row['name'].' is a '.(($row['rp']=='1')?'RP ':'Normal ').' realm';
 		if (nvl($row['regionname'],'') != '') $realmbio .= ' in the '.$row['regionname'].' region';
 		if (nvl($row['timezone'],'') != '') $realmbio .= ' in the '.$row['timezone'].' time zone';
 		$realmbio .= '.';
@@ -327,8 +312,13 @@ EOF;
 		}
 		if ($connnames != '')
 			$realmbio .= ' These statistics include its <a href="http://wowpedia.org/Connected_Realm">Connected Realm' . ((strpos($connnames, ',') !== false) ? 's' : '') . '</a>: ' . $connnames . '.';
-		
-		$html = str_replace('JSONSIZE',$jsonsize,str_replace('REALMSET', strtolower($realmset), str_replace('REALMBIO', $realmbio, str_replace('PRETTYREALM', $realmset." ".$row['name'], str_replace('SLUG', $row['slug'], $html)))));
+
+        $html = str_replace('LOOKUPJSON', buildLookupJson(),
+                str_replace('JSONSIZE', $jsonsize,
+                str_replace('REALMSET', strtolower($realmset),
+                str_replace('REALMBIO', $realmbio,
+                str_replace('PRETTYREALM', $realmset . " " . $row['name'],
+                str_replace('SLUG', $row['slug'], $html))))));
 
 		return $html;
 	} else {
@@ -345,9 +335,91 @@ EOF;
 
 		$realmbio = '';
 
-		$html = str_replace('JSONSIZE',$jsonsize,str_replace('REALMSET', strtolower($realmset), str_replace('REALMBIO', $realmbio, str_replace('PRETTYREALM', $realmset, str_replace('SLUG', '', $html)))));
-	
+		$html = str_replace('LOOKUPJSON', buildLookupJson(),
+                str_replace('JSONSIZE', $jsonsize,
+                str_replace('REALMSET', strtolower($realmset),
+                str_replace('REALMBIO', $realmbio,
+                str_replace('PRETTYREALM', $realmset,
+                str_replace('SLUG', '', $html))))));
+
 		return $html;
 	}
 }
 
+function buildLookupJson() {
+    global $RACES, $RACE_TO_SIDE, $MAX_LEVEL;
+
+    $lookup = [
+        'maxLevel' => $MAX_LEVEL,
+        'factions' => [
+            'Unknown' => ['', 'Unknown'],
+        ],
+        'colorSet' => [
+            'Death Knight' => '#C41F3B',
+            'Demon Hunter' => '#A330C9',
+            'Druid'        => '#FF7D0A',
+            'Hunter'       => '#ABD473',
+            'Mage'         => '#69CCF0',
+            'Monk'         => '#00FF96',
+            'Paladin'      => '#F58CBA',
+            'Priest'       => '#FFFFFF',
+            'Rogue'        => '#FFF569',
+            'Shaman'       => '#0070DE',
+            'Warlock'      => '#9482C9',
+            'Warrior'      => '#C79C6E',
+
+            'Male'   => '#338833',
+            'Female' => '#883388',
+
+            'Horde'    => '#883333',
+            'Alliance' => '#223355',
+
+            'Blood Elf'    => '#cc3333',
+            'Draenei'      => '#9a73b6',
+            'Dwarf'        => '#6dc161',
+            'Undead'       => '#335566',
+            'Gnome'        => '#f19759',
+            'Goblin'       => '#aacc66',
+            'Human'        => '#3377BB',
+            'Night Elf'    => '#492d7a',
+            'Orc'          => '#3b4006',
+            'Tauren'       => '#775005',
+            'Troll'        => '#bb6633',
+            'Worgen'       => '#755259',
+            'Pandaren (A)' => '#444466',
+            'Pandaren (H)' => '#664444',
+
+            'Nightborne'          => '#321f72',
+            'Highmountain Tauren' => '#593c04',
+            'Zandalari Troll'     => '#195953',
+            'Mag\'har Orc'        => '#4a2b00',
+
+            'Void Elf'            => '#3333cc',
+            'Lightforged Draenei' => '#ffff33',
+            'Kul Tiran'           => '#034d73',
+            'Dark Iron Dwarf'     => '#333333',
+
+
+            'Normal' => '#338833',
+            'RP'     => '#883388'
+        ],
+    ];
+
+    foreach ($RACE_TO_SIDE as $raceId => $sideName) {
+        $lookup['factions'][$sideName][] = $RACES[$raceId];
+    }
+
+    /*
+     * {
+        'Death Knight':'#C41F3B','Demon Hunter':'#A330C9','Druid':'#FF7D0A','Hunter':'#ABD473','Mage':'#69CCF0','Monk':'#00FF96',
+        'Paladin':'#F58CBA','Priest':'#FFFFFF','Rogue':'#FFF569','Shaman':'#0070DE','Warlock':'#9482C9','Warrior':'#C79C6E',
+        'Male':'#338833','Female':'#883388','Horde':'#883333','Alliance':'#223355',
+        'Blood Elf':'#cc3333','Draenei':'#9a73b6','Dwarf':'#6dc161','Undead':'#335566','Gnome':'#f19759','Goblin':'#aacc66',
+        'Human':'#3377BB','Night Elf':'#492d7a','Orc':'#3b4006','Tauren':'#775005','Troll':'#bb6633','Worgen':'#755259',
+        'PandarenA':'#444466','PandarenH':'#664444',
+        'Normal':'#338833','RP':'#883388'
+    }
+     */
+    
+    return json_encode($lookup);
+}
