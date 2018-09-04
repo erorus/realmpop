@@ -22,13 +22,13 @@ if (!DBConnect()) {
 $allRealms = [];
 $ownerRealms = [];
 
-$stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r');
+$stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, name) ownerrealm from tblRealm r');
 $stmt->execute();
 $result = $stmt->get_result();
 $ownerRealms = DBMapArray($result, ['region', 'ownerrealm']);
 $stmt->close();
 
-$stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, replace(name, \' \', \'\')) ownerrealm from tblRealm r');
+$stmt = $db->prepare('select r.*, ifnull(r.ownerrealm, name) ownerrealm from tblRealm r');
 $stmt->execute();
 $result = $stmt->get_result();
 $allRealms = DBMapArray($result, ['region', 'name']);
