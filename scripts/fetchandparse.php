@@ -209,7 +209,7 @@ function GetNextCharacter($region, &$characterNames) {
     } while (!isset($ownerRealms[$region][$sellerRealm]) && count($sellerRealms));
     if (!isset($ownerRealms[$region][$sellerRealm]) && count($sellerRealms) == 0) {
         if (count($characterNames))
-            DebugMessage('The following realms were not matched:'."\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($ownerRealms)).'"', E_USER_WARNING);
+            DebugMessage("The following {$region} realms were not matched:\n\"".implode('", "', array_keys($characterNames))."\"\n against \"".implode('", "', array_keys($ownerRealms)).'"', E_USER_WARNING);
         $characterNames = [];
         return;
     }
@@ -237,7 +237,7 @@ function GetNextCharacter($region, &$characterNames) {
     }
 
     if (!$character) {
-        DebugMessage("No more characters on {$realmRow['name']}");
+        DebugMessage("No more characters on {$region} {$realmRow['name']}");
         return;
     }
 
@@ -245,7 +245,7 @@ function GetNextCharacter($region, &$characterNames) {
     foreach ($characterNames as $realm => $chars) {
         $totalChars += count($chars);
     }
-    DebugMessage("Getting {$realmRow['name']} character {$character} ($totalChars remaining)");
+    DebugMessage("Getting {$region} {$realmRow['name']} character {$character} ($totalChars remaining)");
 
     $guild = false;
 
@@ -286,7 +286,7 @@ function GetGuild($region, &$characterNames, $guild, $realmName) {
         return;
 
     if (!isset($allRealms[$region][$realmName])) {
-        DebugMessage('Could not find realm '.$realmName);
+        DebugMessage("Could not find realm {$region} {$realmName}");
         return;
     }
 
@@ -312,7 +312,7 @@ function GetGuild($region, &$characterNames, $guild, $realmName) {
         $guildId = $db->insert_id;
     }
 
-    DebugMessage("Getting $realmName guild <$guild>");
+    DebugMessage("Getting {$region} $realmName guild <$guild>");
     $url = GetBattleNetURL($allRealms[$region][$realmName]['region'], "wow/guild/".$allRealms[$region][$realmName]['slug']."/".rawurlencode($guild)."?fields=members");
     $json = FetchHTTP($url);
     if (!$json)
