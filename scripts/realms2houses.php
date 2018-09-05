@@ -16,16 +16,21 @@ CatchKill();
 if (!DBConnect())
     DebugMessage('Cannot connect to db!', E_USER_ERROR);
 
-$regions = array('US','EU');
+$regions = [
+    'US' => 'en_US',
+    'EU' => 'en_GB',
+//    'CN' => 'zh_CN',
+//    'TW' => 'zh_TW',
+//    'KR' => 'ko_KR',
+];
 
-foreach ($regions as $region)
-{
+foreach ($regions as $region => $realmListLocale) {
     heartbeat();
     if (CatchKill())
         break;
     if (isset($argv[1]) && $argv[1] != $region)
         continue;
-    $url = GetBattleNetURL($region, 'wow/realm/status');
+    $url = GetBattleNetURL($region, 'wow/realm/status?locale=' . $realmListLocale);
 
     $json = FetchHTTP($url);
     $realms = json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
