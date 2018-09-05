@@ -48,9 +48,10 @@ foreach ($regions as $region)
     $stmt->close();
     $nextId++;
 
+    $seenLocales = [];
     $stmt = $db->prepare('insert into tblRealm (id, region, slug, name, locale, rp, timezone, population) values (?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update name=values(name), locale=values(locale), rp=values(rp), timezone=values(timezone), population=values(population)');
-    foreach ($realms['realms'] as $realm)
-    {
+    foreach ($realms['realms'] as $realm) {
+        $seenLocales[$realm['locale']] = true;
         $rp = stripos($realm['type'],'roleplaying') !== false ? 1 : 0;
         $population = $realm['population'];
         if ($population == 'n/a') {
@@ -64,11 +65,20 @@ foreach ($regions as $region)
     }
     $stmt->close();
 
-    GetRussianOwnerRealms($region);
+    $seenLocales = array_keys($seenLocales);
+    foreach ($seenLocales as $locale) {
+        if ($locale == $realmListLocale) {
+            continue;
+        }
+        if (CatchKill()) {
+            break;
+        }
+        GetLocalizedOwnerRealms($region, $locale);
+    }
     if (CatchKill())
         break;
 
-    $stmt = $db->prepare('select slug, house, name, ifnull(ownerrealm, replace(name, \' \', \'\')) as ownerrealm from tblRealm where region = ?');
+    $stmt = $db->prepare('select slug, house, name, ifnull(ownerrealm, name) as ownerrealm from tblRealm where region = ?');
     $stmt->bind_param('s', $region);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -272,51 +282,55 @@ function GetDataRealms($region, $hash)
     return $result;
 }
 
-function GetRussianOwnerRealms($region)
+function GetLocalizedOwnerRealms($region, $locale)
 {
     global $db;
 
-    $ruID = 0;
-    $ruSlug = '';
-    $ruToRun = array();
-    $stmt = $db->prepare('select id, slug from tblRealm where region=? and locale=\'ru_RU\' and ownerrealm is null');
-    $stmt->bind_param('s', $region);
+    $realmId = 0;
+    $slug = '';
+    $sqlToRun = array();
+    $stmt = $db->prepare('SELECT id, slug FROM tblRealm WHERE region=? AND locale=? AND ownerrealm IS NULL');
+    $stmt->bind_param('ss', $region, $locale);
     $stmt->execute();
-    $stmt->bind_result($ruID, $ruSlug);
-    while ($stmt->fetch())
-    {
+    $stmt->bind_result($realmId, $slug);
+    while ($stmt->fetch()) {
         heartbeat();
-        if (CatchKill())
+        if (CatchKill()) {
             return;
+        }
 
-        DebugMessage("Getting ownerrealm for russian slug $ruSlug");
-        $url = GetBattleNetURL($region, 'wow/realm/status?realms='.$ruSlug.'&locale=ru_RU');
-        $ruRealm = json_decode(FetchHTTP($url), true, 512, JSON_BIGINT_AS_STRING);
-        if (json_last_error() != JSON_ERROR_NONE)
-        {
+        DebugMessage("Getting ownerrealm for $locale slug $slug");
+        $url = GetBattleNetURL($region, 'wow/realm/status?realms=' . urlencode($slug) . '&locale=' . $locale);
+        $realmJson = json_decode(\Newsstand\HTTP::Get($url), true, 512, JSON_BIGINT_AS_STRING);
+        if (json_last_error() != JSON_ERROR_NONE) {
             DebugMessage("$url did not return valid JSON");
             continue;
         }
 
-        if (!isset($ruRealm['realms']) || (count($ruRealm['realms']) == 0))
-        {
+        if (!isset($realmJson['realms']) || (count($realmJson['realms']) == 0)) {
             DebugMessage("$url returned no realms");
             continue;
         }
 
-        $ruOwner = str_replace(' ', '', $ruRealm['realms'][0]['name']);
-        $ruToRun[] = sprintf('update tblRealm set ownerrealm = \'%s\' where id = %d', $db->escape_string($ruOwner), $ruID);
+        if (count($realmJson['realms']) > 1) {
+            DebugMessage("Region $region slug $slug returned ".count($realmJson['realms'])." realms. $url");
+        }
+
+        $ownerRealm = $realmJson['realms'][0]['name'];
+        $sqlToRun[] = sprintf('UPDATE tblRealm SET ownerrealm = \'%s\' WHERE id = %d', $db->escape_string($ownerRealm), $realmId);
     }
     $stmt->close();
-    if (CatchKill())
+    if (CatchKill()) {
         return;
+    }
 
-    foreach ($ruToRun as $sql)
-    {
+    foreach ($sqlToRun as $sql) {
         heartbeat();
-        if (CatchKill())
+        if (CatchKill()) {
             return;
-        if (!$db->real_query($sql))
+        }
+        if (!$db->real_query($sql)) {
             DebugMessage(sprintf("%s: %s", $sql, $db->error), E_USER_WARNING);
+        }
     }
 }
