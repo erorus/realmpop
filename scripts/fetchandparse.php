@@ -131,6 +131,8 @@ function ParseAuctionData($region, $maxId, $json) {
 function GetCharacterNames($region, $maxId, $json) {
     global $ownerRealms;
 
+    $alertedRealms = [];
+
     $rolloverMid = pow(2, 30);
     $canRollover = $maxId > $rolloverMid;
 
@@ -144,8 +146,13 @@ function GetCharacterNames($region, $maxId, $json) {
         $seller = $res[2][$x];
         $sellerRealm = $res[3][$x];
 
-        if (!isset($ownerRealms[$region][$sellerRealm]))
+        if (!isset($ownerRealms[$region][$sellerRealm])) {
+            if (!isset($alertedRealms[$sellerRealm])) {
+                DebugMessage("Could not find sellerRealm {$sellerRealm} in {$region}");
+                $alertedRealms[$sellerRealm] = true;
+            }
             continue;
+        }
 
         $result[$sellerRealm][$seller] = 0;
     }
