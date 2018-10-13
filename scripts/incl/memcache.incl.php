@@ -6,6 +6,7 @@ if (!$memcache->getServerList()) {
 }
 $memcache->setOptions([
     Memcached::OPT_BINARY_PROTOCOL => true,
+    Memcached::OPT_PREFIX_KEY => 'realmpop',
 ]);
 
 function MCGet($key)

@@ -257,7 +257,7 @@ function GetNextCharacter($region, &$characterNames) {
     $guild = false;
 
     $url = GetBattleNetURL($realmRow['region'], "wow/character/".$realmRow['slug']."/".rawurlencode($character)."?fields=guild");
-    $json = FetchHTTP($url);
+    $json = $url ? FetchHTTP($url[0], $url[1]) : false;
 
     $dta = json_decode($json, true);
     if (json_last_error() != JSON_ERROR_NONE || !isset($dta['name'])) {
@@ -321,7 +321,7 @@ function GetGuild($region, &$characterNames, $guild, $realmName) {
 
     DebugMessage("Getting {$region} $realmName guild <$guild>");
     $url = GetBattleNetURL($allRealms[$region][$realmName]['region'], "wow/guild/".$allRealms[$region][$realmName]['slug']."/".rawurlencode($guild)."?fields=members");
-    $json = FetchHTTP($url);
+    $json = $url ? FetchHTTP($url[0], $url[1]) : false;
     if (!$json)
         return;
 

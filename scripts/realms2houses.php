@@ -32,7 +32,7 @@ foreach ($regions as $region => $realmListLocale) {
         continue;
     $url = GetBattleNetURL($region, 'wow/realm/status?locale=' . $realmListLocale);
 
-    $json = FetchHTTP($url);
+    $json = $url ? FetchHTTP($url[0], $url[1]) : '';
     $realms = json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
     if (json_last_error() != JSON_ERROR_NONE)
     {
@@ -108,7 +108,7 @@ foreach ($regions as $region => $realmListLocale) {
         DebugMessage("Fetching $region $slug");
         $url = GetBattleNetURL($region, "wow/auction/data/$slug");
 
-        $json = FetchHTTP($url);
+        $json = $url ? FetchHTTP($url[0], $url[1]) : '';
         $dta = json_decode($json, true);
         if (!isset($dta['files']))
         {
