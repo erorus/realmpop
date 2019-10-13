@@ -111,6 +111,10 @@ function NextDataFile() {
     fclose($handle);
     unlink(SNAPSHOT_PATH . $fileName);
 
+    if (substr($json, 0, 2) === "\037\213") {
+        $json = gzdecode($json);
+    }
+
     ParseAuctionData($region, $maxId, $json);
     return 0;
 }
